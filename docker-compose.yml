@@ -1,7 +1,7 @@
 # Self-hosting FeliratHUB with Docker Compose: `docker compose up -d`; update with `docker compose pull && docker compose up -d`.
 services:
   felirathub:
-    image: pbalazs123/supersubtitles:latest   # or :dev for test builds
+    image: pbalazs123/felirathub:latest       # or :dev for test builds
     # build: .                                 # uncomment to build from this repository instead
     container_name: felirathub
     restart: unless-stopped
