@@ -14,7 +14,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License: MIT"/></a>
   <img src="https://img.shields.io/badge/node-%3E%3D24-brightgreen?style=flat-square" alt="Node 24+"/>
   <img src="https://img.shields.io/badge/Stremio-addon-purple?style=flat-square" alt="Stremio addon"/>
-  <a href="https://hub.docker.com/r/pbalazs123/felirathub"><img src="https://img.shields.io/docker/pulls/pbalazs123/felirathub?style=flat-square&logo=docker&logoColor=white" alt="Docker pulls"/></a>
+  <a href="https://hub.docker.com/r/pbalazs123/felirathub"><img src="https://img.shields.io/docker/pulls/pbalazs123/felirathub?style=flat-square&logo=docker&logoColor=white&cacheSeconds=3600" alt="Docker pulls"/></a>
 </p>
 
 <p align="center">
