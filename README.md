@@ -11,10 +11,13 @@
 </p>
 
 <p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License: MIT"/></a>
-  <img src="https://img.shields.io/badge/node-%3E%3D24-brightgreen?style=flat-square" alt="Node 24+"/>
-  <img src="https://img.shields.io/badge/Stremio-addon-purple?style=flat-square" alt="Stremio addon"/>
-  <a href="https://hub.docker.com/r/pbalazs123/felirathub"><img src="https://img.shields.io/docker/pulls/pbalazs123/felirathub?style=flat-square&logo=docker&logoColor=white&cacheSeconds=3600" alt="Docker pulls"/></a>
+  <a href="https://github.com/pbalazs123/felirathub/releases"><img src="https://img.shields.io/github/v/release/pbalazs123/felirathub?include_prereleases&label=release" alt="Release"/></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"/></a>
+  <img src="https://img.shields.io/badge/node-%3E%3D24-brightgreen.svg" alt="Node.js 24+"/>
+  <a href="https://hub.docker.com/r/pbalazs123/felirathub"><img src="https://img.shields.io/badge/docker%20hub-pbalazs123%2Ffelirathub-2496ED?logo=docker&logoColor=white" alt="Docker Hub"/></a>
+  <a href="https://hub.docker.com/r/pbalazs123/felirathub"><img src="https://img.shields.io/docker/pulls/pbalazs123/felirathub?logo=docker&logoColor=white&cacheSeconds=3600" alt="Docker pulls"/></a>
+  <a href="https://hub.docker.com/r/pbalazs123/felirathub/tags"><img src="https://img.shields.io/docker/image-size/pbalazs123/felirathub/latest?logo=docker&logoColor=white" alt="Image size"/></a>
+  <img src="https://img.shields.io/badge/status-active-success.svg" alt="Status: active"/>
 </p>
 
 <p align="center">
