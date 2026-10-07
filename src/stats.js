@@ -1,14 +1,14 @@
 // Statistics for the dashboard: live requests (last 5 minutes), request history, daily totals, the
 // health of the sites the addon reads from, CPU and memory. Stored in the database (src/db.js).
 // Privacy (GDPR): nothing is recorded unless the dashboard is enabled; requests are deleted after
-// HISTORY_DAYS (default 30); only the first part of an IP address is kept ("84.•••.•.•",
+// HISTORY_DAYS (default 30); only the first part of an IP address is kept ("203.•••.•.•",
 // "2001:•••"), one of a few hundred large blocks, which doesn't identify anyone; the full IP is
 // used only to look up the country and is never stored. Daily totals contain no personal data and
 // are kept for 90 days.
 
 const os = require('node:os');
 const settings = require('./settings');
-const { db } = require('./db');
+const { db, persistent } = require('./db');
 const { countryOf } = require('./geo');
 
 const ENABLED = Boolean(settings.dashboardPassword);
@@ -17,6 +17,9 @@ const DAY = 24 * HOUR;
 const LIVE_MS = 5 * 60 * 1000;
 const DAILY_KEEP_DAYS = 90;
 const PAGE_SIZE = 50;
+// Without DATA_DIR the history lives in memory, so it is also capped by size: at most this many
+// requests (roughly 50 MB), the oldest are deleted first.
+const MEMORY_HISTORY_ROWS = 50000;
 
 const startedAt = Date.now();
 const sites = new Map();
@@ -53,6 +56,7 @@ const sql = {
   hourly: db.prepare('SELECT (time - ?) / ? AS bucket, COUNT(*) AS count, ROUND(AVG(ms)) AS ms FROM requests WHERE time >= ? GROUP BY bucket'),
   daily: db.prepare('SELECT * FROM daily WHERE day >= ? ORDER BY day'),
   deleteOld: db.prepare('DELETE FROM requests WHERE time < ?'),
+  deleteBeyond: db.prepare('DELETE FROM requests WHERE id <= (SELECT id FROM requests ORDER BY id DESC LIMIT 1 OFFSET ?)'),
   deleteOldDaily: [
     db.prepare('DELETE FROM daily WHERE day < ?'),
     db.prepare('DELETE FROM daily_titles WHERE day < ?'),
@@ -112,6 +116,7 @@ function siteStats(host) {
 
 function cleanUp() {
   sql.deleteOld.run(Date.now() - settings.historyDays * DAY);
+  if (!persistent) sql.deleteBeyond.run(MEMORY_HISTORY_ROWS);
   const oldestDay = dayOf(Date.now() - DAILY_KEEP_DAYS * DAY);
   sql.deleteOldDaily.forEach((statement) => statement.run(oldestDay));
 }
@@ -221,4 +226,4 @@ function deleteHistory(ids) {
   return Number(statement.run(cutoff, ...numbers).changes);
 }
 
-module.exports = { ENABLED, recordRequest, recordOutgoing, snapshot, history, deleteHistory, maskIp, siteStats };
+module.exports = { MEMORY_HISTORY_ROWS, ENABLED, recordRequest, recordOutgoing, snapshot, history, deleteHistory, maskIp, siteStats };
