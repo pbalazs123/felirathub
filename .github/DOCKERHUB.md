@@ -8,7 +8,6 @@ FeliratHUB is a self-hosted Stremio addon that finds subtitles for movies and se
 season packs on the fly, drops subtitles for the wrong episode, and ranks the rest to match the release you're playing.
 
 [GitHub](https://github.com/pbalazs123/felirathub) •
-[Magyar leírás](https://github.com/pbalazs123/felirathub/blob/main/README.hu.md) •
 [Releases](https://github.com/pbalazs123/felirathub/releases) •
 [Report a bug](https://github.com/pbalazs123/felirathub/issues)
 
