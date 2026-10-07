@@ -63,8 +63,8 @@ input:focus, select:focus { border-color: hsl(220 5% 35%); box-shadow: 0 0 0 3px
 .switch span::after { content: ""; position: absolute; width: 18px; height: 18px; left: 2px; top: 2px; border-radius: 50%; background: var(--muted-text); transition: .15s; }
 .switch input:checked + span { background: var(--primary); }
 .switch input:checked + span::after { transform: translateX(18px); background: var(--primary-text); }
-.segmented { display: inline-flex; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-.segmented button { border: 0; background: var(--bg); color: var(--muted-text); padding: 8px 14px; font: inherit; font-weight: 600; cursor: pointer; }
+.segmented { display: inline-flex; flex: none; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.segmented button { border: 0; background: var(--bg); color: var(--muted-text); padding: 8px 14px; font: inherit; font-weight: 600; cursor: pointer; white-space: nowrap; }
 .segmented button.active { background: var(--primary); color: var(--primary-text); }
 table { width: 100%; border-collapse: collapse; font-size: .88rem; }
 th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
