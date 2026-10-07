@@ -102,7 +102,7 @@ All optional.
 | `PUBLIC_URL` | empty | Public address, e.g. `https://subs.example.com`, if links come out wrong behind a proxy |
 | `DASHBOARD_PASSWORD` | empty | Enables the dashboard at `/dashboard`; without it admin sign-in is disabled and nothing is recorded |
 | `DATA_DIR` | empty | Folder for the database (request history and daily statistics); without it they're kept in memory only |
-| `HISTORY_DAYS` | `30` | How many days the request history is kept (daily totals: 90 days) |
+| `HISTORY_DAYS` | `30` | How many days the request history is kept (daily totals: 90 days). Without `DATA_DIR` it's also capped at 50,000 requests |
 | `CACHE_DIR` | empty | Folder for the disk cache (mount a volume); caches survive restarts |
 | `CACHE_DIR_MAX_MB` | `500` | Size limit of the disk cache |
 | `OPENSUBTITLES` | `1` | Set to `0` to switch OpenSubtitles off by default for new installs |
