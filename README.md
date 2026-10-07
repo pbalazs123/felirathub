@@ -178,7 +178,7 @@ All settings are optional environment variables.
 |----------|---------|--------------|
 | `PORT` | `7000` | Port to listen on |
 | `APP_BASE_PATH` | – | Serve under a subpath, e.g. `/felirathub` |
-| `HISTORY_DAYS` | `30` | Days the request history is kept (daily totals: 90) |
+| `HISTORY_DAYS` | `30` | Days the request history is kept (daily totals: 90). Without `DATA_DIR` it's also capped at 50,000 requests |
 | `CACHE_DIR_MAX_MB` | `500` | Size limit of the disk cache |
 | `SEARCH_CACHE_HOURS` | `12` | How long search results are cached |
 | `RATE_LIMIT_PER_SECOND` | `2` | Requests per second to each source |
