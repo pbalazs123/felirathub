@@ -19,7 +19,8 @@
 
 <p align="center">
   <a href="#-features">Features</a> •
-  <a href="#-quick-start">Quick Start</a> •
+  <a href="#-quick-install">Quick Install</a> •
+  <a href="#-self-hosting">Self-Hosting</a> •
   <a href="#-how-it-works">How It Works</a> •
   <a href="#%EF%B8%8F-configuration">Configuration</a> •
   <a href="#-troubleshooting">Troubleshooting</a>
@@ -48,7 +49,42 @@
 
 ---
 
-## 🚀 Quick Start
+## 📦 Quick Install
+
+### Option 1: Configure page (recommended)
+
+1. **Open the configure page** of the public instance:
+
+   [https://87ecf4bfda74-supersubtitles.baby-beamup.club/](https://87ecf4bfda74-supersubtitles.baby-beamup.club/)
+
+   Self-hosting? Use `https://<your-domain>/` instead.
+
+2. **Choose your settings**: languages, sources, 1 or 2 subtitles per language, and what happens with forced
+   subtitles.
+
+3. **Install the addon**:
+   - Click **Install in the Stremio app** and confirm the install prompt, or **Open in Stremio Web**
+   - Nuvio and other apps: click **Copy** next to the addon URL and paste it under Addons
+
+### Option 2: Manual install
+
+1. **Open Stremio or Nuvio** and go to Addons
+
+2. **Install using the manifest link**:
+
+   [https://87ecf4bfda74-supersubtitles.baby-beamup.club/manifest.json](https://87ecf4bfda74-supersubtitles.baby-beamup.club/manifest.json)
+
+   This installs the default settings: Hungarian and English, both sources, 2 subtitles per language.
+
+### After installation
+
+Subtitles show up automatically when you play a movie or episode. Your settings are part of the addon URL, so
+**install again** after changing them.
+
+> **Installed SuperSubtitles from the public instance?** Nothing to do: the addon at that address is now FeliratHUB
+> and keeps working; it shows the new name once Stremio or Nuvio refreshes it.
+
+## 🐳 Self-Hosting
 
 ### Docker Compose (recommended)
 
@@ -154,7 +190,7 @@ page.
 or character encoding setting.
 
 **The addon doesn't install outside your own computer?** Stremio needs HTTPS for remote addons; see the reverse-proxy
-tip in [Quick Start](#-quick-start).
+tip in [Self-Hosting](#-self-hosting).
 
 **Links point to the wrong address?** Set `PUBLIC_URL` to the address people use, e.g. `https://subs.example.com`.
 
