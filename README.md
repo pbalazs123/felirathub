@@ -165,6 +165,7 @@ All settings are optional environment variables.
 | `DASHBOARD_PASSWORD` | – | Enables the dashboard at `/dashboard` |
 | `PUBLIC_URL` | – | Public address, if links come out wrong behind a proxy |
 | `OPENSUBTITLES` | `1` | `0` turns OpenSubtitles off for new installs |
+| `ADDON_ID` | `community.felirathub` | Set to `community.supersubtitles` on a server that ran SuperSubtitles, so existing installs keep working |
 | `MAX_SUBS_PER_LANG` | `2` | Default number of subtitles per language (1 or 2) |
 
 <details>

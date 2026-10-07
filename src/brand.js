@@ -9,6 +9,8 @@ module.exports = {
     'Hungarian subtitle site, and OpenSubtitles. It finds the right episode, takes subtitles out of season packs, ' +
     'fixes Hungarian accents, and puts the subtitles that best match the release you are playing first.',
   repository: 'https://github.com/pbalazs123/felirathub',
-  // Stremio identifies installed addons by this ID; changing it forces everyone to reinstall.
-  addonId: 'community.felirathub'
+  // Stremio identifies installed addons by this ID; changing it forces everyone to reinstall. A
+  // server that used to run SuperSubtitles sets ADDON_ID=community.supersubtitles so the addons
+  // installed from it keep working.
+  addonId: /^[a-z0-9][a-z0-9._-]{2,99}$/i.test(process.env.ADDON_ID || '') ? process.env.ADDON_ID : 'community.felirathub'
 };
