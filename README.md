@@ -5,10 +5,6 @@
 <h1 align="center">FeliratHUB</h1>
 
 <p align="center">
-  <b>🇬🇧 English</b> | <a href="README.hu.md">🇭🇺 Magyar</a>
-</p>
-
-<p align="center">
   <b>Hungarian &amp; English subtitles for Stremio and Nuvio</b><br/>
   Subtitles from SuperSubtitles (feliratok.eu) and OpenSubtitles in one list, for the right episode, with correct
   Hungarian accents, best match first.
