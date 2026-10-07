@@ -1,0 +1,8 @@
+# Files kept out of the Docker build context (dependencies are installed inside the image).
+node_modules
+.git
+.github
+npm-debug.log
+.buildpacks
+Procfile
+docker-compose.yml

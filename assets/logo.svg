@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="FeliratHUB">
+<rect width="128" height="128" rx="28" fill="#0d0e10"/>
+<rect x="1" y="1" width="126" height="126" rx="27" fill="none" stroke="#2a2d33" stroke-width="2"/>
+<path d="M26 34a12 12 0 0 1 12-12h52a12 12 0 0 1 12 12v40a12 12 0 0 1-12 12H58l-18 16v-16h-2a12 12 0 0 1-12-12z" fill="#f2f3f5"/>
+<rect x="40" y="46" width="48" height="8" rx="4" fill="#0d0e10"/>
+<rect x="48" y="62" width="32" height="8" rx="4" fill="#0d0e10"/>
+</svg>

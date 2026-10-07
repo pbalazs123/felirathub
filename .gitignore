@@ -1,0 +1,16 @@
+# Dependencies are installed with `npm install`, never committed.
+node_modules/
+
+# Logs
+npm-debug.log*
+
+# Local environment and secrets
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local BeamUp CLI settings (written by `beamup`)
+beamup.json

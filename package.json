@@ -1,0 +1,40 @@
+{
+  "name": "felirathub",
+  "version": "1.0.0-beta.1",
+  "description": "FeliratHUB: Hungarian and English subtitles for Stremio and Nuvio from SuperSubtitles (feliratok.eu) and OpenSubtitles",
+  "keywords": [
+    "stremio",
+    "stremio-addon",
+    "nuvio",
+    "subtitles",
+    "hungarian",
+    "felirat",
+    "feliratok",
+    "opensubtitles",
+    "felirathub"
+  ],
+  "homepage": "https://github.com/pbalazs123/felirathub#readme",
+  "bugs": {
+    "url": "https://github.com/pbalazs123/felirathub/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pbalazs123/felirathub.git"
+  },
+  "license": "MIT",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "@ip-location-db/dbip-country-mmdb": "^2.3.2026060120",
+    "cheerio": "^1.0.0",
+    "jszip": "^3.10.1",
+    "mmdb-lib": "^3.0.3",
+    "node-unrar-js": "^2.0.2"
+  }
+}
