@@ -19,6 +19,7 @@
 
 <p align="center">
   <a href="#-features">Features</a> •
+  <a href="#-screenshots">Screenshots</a> •
   <a href="#-quick-install">Quick Install</a> •
   <a href="#-self-hosting">Self-Hosting</a> •
   <a href="#-how-it-works">How It Works</a> •
@@ -48,6 +49,23 @@
 | OpenSubtitles | No | Through Stremio's OpenSubtitles v3 addon |
 
 ---
+
+## 📸 Screenshots
+
+<p align="center">
+  <img src="assets/screenshots/configure.png" alt="The configure page" width="820"/><br/>
+  <i>The configure page: languages, subtitles per language, forced subtitles and sources, then one click to install</i>
+</p>
+
+<p align="center">
+  <img src="assets/screenshots/dashboard-overview.png" alt="Dashboard overview" width="820"/><br/>
+  <i>The dashboard (optional, for the server's owner): requests, searches and the health of each source</i>
+</p>
+
+<p align="center">
+  <img src="assets/screenshots/dashboard-live.png" alt="Live requests on the dashboard" width="820"/><br/>
+  <i>Live requests: open one to see the subtitles that were served and where they came from</i>
+</p>
 
 ## 📦 Quick Install
 
