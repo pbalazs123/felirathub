@@ -5,7 +5,7 @@ Published releases are listed at https://github.com/pbalazs123/felirathub/releas
 
 ## 1.0.0-beta.1
 
-The first beta of **FeliratHUB**, a new addon written from scratch. It succeeds SuperSubtitles 1.x as a separate addon (id `community.felirathub`), so install it from its configure page and remove the old one.
+The first beta of **FeliratHUB**, a new addon written from scratch. It succeeds SuperSubtitles 1.x as a separate addon (id `community.felirathub`), so install it from its configure page and remove the old one. A server that ran SuperSubtitles can set `ADDON_ID=community.supersubtitles` instead, and the addons installed from it simply become FeliratHUB.
 
 - **Name and logo.** FeliratHUB brings several sources together, with its own logo in the Stremio and Nuvio addon lists.
 - **Two sources, one list.** OpenSubtitles (through Stremio's OpenSubtitles v3 addon, no account needed) joins SuperSubtitles (feliratok.eu). OpenSubtitles is asked first; SuperSubtitles only for the languages OpenSubtitles has nothing in, to keep the load on feliratok.eu low.
