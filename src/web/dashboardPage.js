@@ -185,7 +185,7 @@ function dashboardPage({ baseUrl }) {
   <h1>${name} <span class="muted" style="font-weight:500">Dashboard</span></h1>
   <nav class="tabs" id="tabs">
     <button data-tab="overview" class="active">Overview</button>
-    <button data-tab="history">History</button>
+    <button data-tab="history">Requests</button>
     <button data-tab="caches">Caches</button>
     <button data-tab="system">System</button>
   </nav>
@@ -215,7 +215,7 @@ function dashboardPage({ baseUrl }) {
   </section>
 
   <section data-tab="history">
-    <div class="title-row"><div><h2>History</h2><div class="muted" id="history-subtitle">All requests, newest first</div></div></div>
+    <div class="title-row"><div><h2>Requests</h2><div class="muted" id="history-subtitle">All requests, newest first</div></div></div>
     <div class="toolbar">
       <input type="text" id="history-search" placeholder="Search title, subtitle, client ID, country or IP…">
       <select id="history-kind">
