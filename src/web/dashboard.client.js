@@ -65,6 +65,10 @@
     return '<div class="file"><span class="pill">' + esc(f[1]) + '</span>' + (f[2] ? '<span class="shown">' + esc(f[2]) + '</span>' : '') +
       '<span>' + esc(f[0]) + '</span>' + (after || '') + '</div>';
   }
+  // Badges: HTTP status (green 2xx, amber 4xx, red 5xx) and response time (blue under 0.5 s,
+  // yellow under 2 s, red from 2 s).
+  function statusBadge(status) { return '<span class="kind ' + (status >= 500 ? 'error' : status >= 400 ? 'missing' : status >= 300 ? 'page' : 'ok') + '">' + status + '</span>'; }
+  function timeBadge(ms) { return '<span class="kind ' + (ms < 500 ? 'fast' : ms < 2000 ? 'medium' : 'slow') + '">' + duration(ms) + '</span>'; }
   function fact(label, value, cls) { return '<div class="fact"><span class="muted">' + label + '</span><span class="' + (cls || '') + '">' + value + '</span></div>'; }
 
   // History: one line per request (a search together with the subtitle downloads that followed it);
@@ -72,7 +76,6 @@
   var REQUEST_HEAD = [['Type'], ['IP'], ['Title'], ['Status', 'num'], ['Ended', 'num']];
   var expanded = {};
   function requestRows(r, now, first) {
-    var cls = r.status >= 500 ? 'bad' : r.status >= 400 ? 'warn' : '';
     var m = meta(r);
     var open = Boolean(expanded[r.id]);
     var columns = REQUEST_HEAD.length + (first ? 1 : 0);
@@ -84,13 +87,15 @@
       var f = files(d)[0] || [d.detail, 'SuperSubtitles'];
       var match = f[3] && byKey[f[3]];
       return fileLine([f[0], f[1], match ? match[2] : f[2]],
-        '<span class="muted small">' + ago(d.time + d.ms, now) + (d.status >= 400 ? ' · <span class="warn">HTTP ' + d.status + '</span>' : '') + '</span>');
+        '<span class="badges">' + statusBadge(d.status) + timeBadge(d.ms) + '</span><span class="muted small">' + ago(d.time + d.ms, now) + '</span>');
     });
     var poster = posterUrl(m);
     var details = '';
     if (poster || (m && m.name)) {
       details += '<div class="poster">' + (poster ? '<img ' + (open ? 'src' : 'data-src') + '="' + esc(poster) + '" alt="" onerror="this.remove()">' : '') +
-        '<div class="name">' + esc((m && m.name ? m.name : '') + episodeOf(m)) + '</div><div class="muted small">' + esc(m && m.year ? m.year : '') + '</div></div>';
+        '<div class="name">' + esc((m && m.name ? m.name : '') + episodeOf(m)) + '</div>' +
+        (m && m.year ? '<div class="muted small">(' + esc(m.year) + ')</div>' : '') +
+        (m && /^tt\d+$/.test(m.imdbId || '') ? '<a class="imdb" href="https://www.imdb.com/title/' + m.imdbId + '/" target="_blank" rel="noopener noreferrer">IMDb</a>' : '') + '</div>';
     }
     details += '<div class="facts">' + fact('App', esc(r.client || 'unknown')) + fact('Request', esc(readableUrl(r.url)), 'mono') +
       (m ? fact('File', m.filename ? esc(m.filename) : '<span class="muted">not available</span>', m.filename ? 'mono' : '') : '');
@@ -104,8 +109,8 @@
     }
     details += '</div>';
     return '<tr class="request' + (open ? ' open' : '') + '" data-request="' + r.id + '">' + (first || '') +
-      '<td>' + kind(r.kind) + '</td><td>' + who(r) + '</td><td class="title">' + esc(titleOf(r, m)) + '</td>' +
-      '<td class="num"><span class="' + cls + '">' + r.status + '</span> <span class="muted">· ' + duration(r.ms) + '</span></td>' +
+      '<td>' + kind(r.kind) + '</td><td>' + who(r) + '</td><td class="title"><span class="clip">' + esc(titleOf(r, m)) + '</span></td>' +
+      '<td class="num"><span class="badges">' + statusBadge(r.status) + timeBadge(r.ms) + '</span></td>' +
       '<td class="num muted" title="' + dateTime(r.time) + '">' + ago(r.time + r.ms, now) + '</td></tr>' +
       '<tr class="details"' + (open ? '' : ' hidden') + '><td colspan="' + columns + '"><div class="request-details">' + details + '</div></td></tr>';
   }
