@@ -115,7 +115,8 @@ section[data-tab].active { display: block; }
 .request-details .poster { flex: none; width: 110px; text-align: center; }
 .request-details .poster img { display: block; width: 110px; height: 163px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); margin-bottom: 8px; }
 .request-details .poster .name { font-weight: 600; line-height: 1.3; }
-.request-details .imdb { display: inline-block; margin-top: 8px; padding: 2px 8px; border-radius: 5px; background: #f5c518; color: #000; font-weight: 800; font-size: .78rem; text-decoration: none; }
+.request-details .imdb { display: inline-block; margin-top: 8px; line-height: 0; }
+.request-details .imdb img { display: block; width: 52px; height: 26px; }
 .request-details .imdb:hover { filter: brightness(1.1); }
 .request-details .facts { flex: 1; min-width: 0; display: grid; gap: 4px; }
 .request-details .fact { display: grid; grid-template-columns: 70px 1fr; gap: 10px; }
