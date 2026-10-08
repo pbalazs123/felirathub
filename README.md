@@ -42,7 +42,7 @@
 | **Correct accents** | Everything arrives as UTF-8, so ő and ű display correctly |
 | **Best match first** | Up to 2 per language, ranked by release group, source, resolution and codec of what you play, shown as e.g. "Magyar · 92%" |
 | **Forced subtitles** | Subtitles for the Hungarian dub ("szinkronoshoz") are shown as "Magyar · Forced", as their own group (Nuvio), or hidden |
-| **Dashboard** | Live requests, history, source status, caches and system health |
+| **Dashboard** | Request history, source status, caches and system health |
 
 ### 🌍 Subtitle sources
 
@@ -66,8 +66,8 @@
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/dashboard-live.png" alt="Live requests on the dashboard" width="820"/><br/>
-  <i>Live requests: open one to see the subtitles that were served and where they came from</i>
+  <img src="assets/screenshots/dashboard-history.png" alt="Request history on the dashboard" width="820"/><br/>
+  <i>The history: one line per request; open one to see the app, the subtitles sent to the player and the ones downloaded</i>
 </p>
 
 ## 📦 Quick Install
@@ -193,12 +193,12 @@ All settings are optional environment variables.
 ### 📊 Dashboard
 
 Set `DASHBOARD_PASSWORD` and open `/dashboard`. Tabs: **Overview** (source status, 7/30-day charts, popular titles),
-**Live** (last 5 minutes), **History** (searchable), **Caches** and **System**.
+**History** (every request, newest first, searchable), **Caches** and **System**.
 
 ### 🔐 Privacy
 
 Nothing is recorded unless the dashboard is enabled. The request log keeps only the first part of an IP address
-(e.g. `203.•••.•.•`) and the country, and is deleted after `HISTORY_DAYS` (default 30). Countries are looked up offline.
+(e.g. `203.•••.•.•`), the country and the app's name (e.g. Stremio), and is deleted after `HISTORY_DAYS` (default 30). Countries are looked up offline.
 The configure page shows a privacy notice whenever requests are recorded.
 
 ---
