@@ -72,7 +72,7 @@
   function timeBadge(ms) { return '<span class="kind ' + (ms < 500 ? 'fast' : ms < 2000 ? 'medium' : 'slow') + '">' + duration(ms) + '</span>'; }
   function fact(label, value, cls) { return '<div class="fact"><span class="muted">' + label + '</span><span class="' + (cls || '') + '">' + value + '</span></div>'; }
 
-  // History: one line per request (a search together with the subtitle downloads that followed it);
+  // Requests tab: one line per request (a search together with the subtitle downloads that followed it);
   // a click opens the poster, the app, the request and the subtitles sent and downloaded.
   var REQUEST_HEAD = [['Type'], ['IP'], ['Client ID'], ['Title'], ['Status', 'num'], ['Ended', 'num']];
   var expanded = {};
@@ -296,7 +296,7 @@
     }));
   }
 
-  // History: 50 per page, search and type filter, select and delete.
+  // Requests tab: 50 per page, search and type filter, select and delete.
   var historyState = { page: 1, search: '', kind: '', selected: {} };
   var searchTimer = null;
   function loadHistory() {
@@ -365,7 +365,7 @@
     if (ids.length && confirm('Delete ' + ids.length + ' selected entries?')) deleteHistory({ ids: ids });
   });
   $('history-clear').addEventListener('click', function () {
-    if (confirm('Delete the whole history?')) deleteHistory({ all: true });
+    if (confirm('Delete all requests?')) deleteHistory({ all: true });
   });
 
   function refresh() {
