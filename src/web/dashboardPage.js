@@ -196,8 +196,8 @@ function dashboardPage({ baseUrl }) {
       </div>
     </div>
     <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr))">
-      <div class="card"><h2>Popular in the last 24 hours</h2><div class="scroll"><table id="popular"></table></div></div>
-      <div class="card"><h2>Where requests come from</h2><div class="scroll"><table id="blocks"></table></div></div>
+      <div class="card"><h2>Popular requests (last 24 hours)</h2><div class="scroll"><table id="popular"></table></div></div>
+      <div class="card"><h2>Request source</h2><div class="scroll"><table id="blocks"></table></div></div>
     </div>
   </section>
 
