@@ -69,11 +69,14 @@ db.exec(`
   );
 `);
 
-// Columns added during the beta (older databases get them here): the request URL (without the domain) and the subtitles served,
-// as JSON [[file name, source], ...].
+// Columns added during the beta (older databases get them here): the request URL (without the
+// domain); the subtitles sent, as JSON [[file name, source, name shown in the player, key], ...];
+// the app that asked (e.g. "Stremio 4.4.168"); the video, as JSON { imdbId, type, name, year,
+// season, episode, filename }; and for a subtitle download, the search it belongs to.
 const columns = new Set(db.prepare('PRAGMA table_info(requests)').all().map((column) => column.name));
-for (const column of ['url', 'files']) {
-  if (!columns.has(column)) db.exec(`ALTER TABLE requests ADD COLUMN ${column} TEXT`);
+for (const [column, type] of [['url', 'TEXT'], ['files', 'TEXT'], ['client', 'TEXT'], ['meta', 'TEXT'], ['parent', 'INTEGER']]) {
+  if (!columns.has(column)) db.exec(`ALTER TABLE requests ADD COLUMN ${column} ${type}`);
 }
+db.exec('CREATE INDEX IF NOT EXISTS requests_parent ON requests (parent)');
 
 module.exports = { db, file, persistent: file !== ':memory:' };
