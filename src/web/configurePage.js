@@ -178,7 +178,7 @@ function configurePage({ baseUrl, initial, defaults, privacyNotice }) {
         ${head('sources')}
         <div class="card">
           <div class="card-title">Subtitle sources</div>
-          <p class="card-description">OpenSubtitles is asked first; SuperSubtitles only for the languages OpenSubtitles has nothing in. At least one stays on.</p>
+          <p class="card-description">OpenSubtitles is asked first; SuperSubtitles only for the languages OpenSubtitles has nothing in, or nothing that matches the file you play at least 70%. At least one stays on.</p>
           ${setting({ id: 'src-supersubtitles', label: 'SuperSubtitles', description: 'feliratok.eu, the largest Hungarian subtitle site. Season packs included.', control: toggle('src-supersubtitles') })}
           ${setting({ id: 'src-opensubtitles', label: 'OpenSubtitles', description: 'Through Stremio\'s OpenSubtitles v3 addon. No account needed.', control: toggle('src-opensubtitles') })}
         </div>
