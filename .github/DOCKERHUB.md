@@ -15,7 +15,7 @@ season packs on the fly, drops subtitles for the wrong episode, and ranks the re
 
 ## ✨ Features
 
-- 🔗 **Two sources, one list**: OpenSubtitles first, SuperSubtitles (feliratok.eu) for the languages it has nothing in
+- 🔗 **Two sources, one list**: OpenSubtitles first, SuperSubtitles (feliratok.eu) for the languages it has nothing (or no good match) in
 - 🇭🇺 **Hungarian and English** subtitles, or only one of them
 - 🏆 **Release ranking**: like Bazarr, matching source and release group (and the cut for films) come first, with a match percentage
 - 🔍 **Right episode and film**: other episodes, seasons and same-name films are filtered out
