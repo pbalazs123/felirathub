@@ -66,8 +66,8 @@
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/dashboard-history.png" alt="Request history on the dashboard" width="820"/><br/>
-  <i>The history: one line per request; open one to see the app, the subtitles sent to the player and the ones downloaded</i>
+  <img src="assets/screenshots/dashboard-history.png" alt="The Requests tab of the dashboard" width="820"/><br/>
+  <i>The Requests tab: one line per request; open one to see the client, the subtitles sent to the player with their score, and the ones downloaded</i>
 </p>
 
 ## 📦 Quick Install
