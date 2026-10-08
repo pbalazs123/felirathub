@@ -87,7 +87,8 @@ async function findSubtitles({ type, id, extra = {}, config }) {
     season: video.season,
     episode: video.episode,
     filename: extra.filename,
-    perLanguage: config.perLanguage,
+    // Without a file name there is nothing to rank by, so every subtitle for the video is listed.
+    perLanguage: extra.filename ? config.perLanguage : Infinity,
     languages: config.languages
   };
   const usable = (found) => (config.forced === 'hide' ? found.filter((subtitle) => !subtitle.forced) : found);
