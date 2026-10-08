@@ -47,9 +47,6 @@
     $('src-opensubtitles').checked = config.sources.opensubtitles;
     $('lang-hun').checked = config.languages.indexOf('hun') !== -1;
     $('lang-eng').checked = config.languages.indexOf('eng') !== -1;
-    [['perLanguage', String(config.perLanguage)], ['forced', config.forced]].forEach(function (pair) {
-      $(pair[0]).querySelectorAll('button').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-value') === pair[1]); });
-    });
     var url = manifestUrl();
     var parsed = new URL(url);
     $('manifest').value = url;
@@ -72,14 +69,6 @@
   $('src-opensubtitles').addEventListener('change', function (e) { toggleSource('opensubtitles', e.target); });
   $('lang-hun').addEventListener('change', function (e) { toggleLanguage('hun', e.target); });
   $('lang-eng').addEventListener('change', function (e) { toggleLanguage('eng', e.target); });
-  [['perLanguage', 'perLanguage', Number], ['forced', 'forced', String]].forEach(function (s) {
-    $(s[0]).addEventListener('click', function (e) {
-      var value = e.target.getAttribute('data-value');
-      if (value === null) return;
-      config[s[1]] = s[2](value);
-      render();
-    });
-  });
 
   // Dialogs
   document.querySelectorAll('dialog').forEach(function (dialog) {
