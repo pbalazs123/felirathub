@@ -40,7 +40,7 @@
 | **Right episode, right film** | Other episodes, seasons and same-name films are filtered out |
 | **Season packs** | The episode is taken out of ZIP and RAR packs on the fly |
 | **Correct accents** | Everything arrives as UTF-8, so ő and ű display correctly |
-| **Best match first** | Up to 2 per language, ranked by release group, source, resolution and codec of what you play, shown as e.g. "Magyar · 92%" |
+| **Best match first** | Up to 2 per language (all of them when the player sends no file name), ranked by release group, source, resolution and codec of what you play, shown as e.g. "Magyar · 92%" |
 | **Forced subtitles** | Subtitles for the Hungarian dub ("szinkronoshoz") are shown as "Magyar · Forced", as their own group (Nuvio), or hidden |
 | **Dashboard** | Request history, source status, caches and system health |
 
@@ -147,7 +147,8 @@ npm install && npm start
 2. **Install.** In the Stremio app, Stremio Web, or copy the URL into Nuvio. Your settings are part of the URL, so
    install again after changing them.
 3. **Watch.** When you play something, FeliratHUB looks up the title, asks OpenSubtitles (and SuperSubtitles for any
-   language still missing), drops wrong matches and returns the best 1 or 2 subtitles per language.
+   language still missing), drops wrong matches and returns the best 1 or 2 subtitles per language (every subtitle for the
+   video when the player doesn't send the file name).
 
 **Tips**
 
@@ -169,7 +170,7 @@ All settings are optional environment variables.
 | `PUBLIC_URL` | – | Public address, if links come out wrong behind a proxy |
 | `OPENSUBTITLES` | `1` | `0` turns OpenSubtitles off for new installs |
 | `ADDON_ID` | `community.felirathub` | Set to `community.supersubtitles` on a server that ran SuperSubtitles, so existing installs keep working |
-| `MAX_SUBS_PER_LANG` | `2` | Default number of subtitles per language (1 or 2) |
+| `MAX_SUBS_PER_LANG` | `2` | Default number of subtitles per language (1 or 2) when the player sends the file name |
 
 <details>
 <summary>Advanced settings</summary>
