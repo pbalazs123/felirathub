@@ -44,10 +44,9 @@ function settingsSummary() {
     ['Requests per second to each site', String(settings.requestsPerSecond)],
     ['Search results cached for', `${settings.searchCacheHours} hours (1 hour without results)`],
     ['Request history kept for', `${settings.historyDays} days${persistent ? '' : `, at most ${stats.MEMORY_HISTORY_ROWS.toLocaleString('en')} requests while in memory`} (daily totals: 90 days)`],
-    ['Database', persistent ? databaseFile : 'memory only (set DATA_DIR to keep history across restarts)'],
-    ['Disk cache', settings.cacheDir ? `${settings.cacheDir} (max ${settings.cacheDirMaxMegabytes} MB)` : 'off'],
+    ['Database', persistent ? databaseFile : settings.dataDir ? `memory only (${settings.dataDir} isn't writable)` : 'memory only (set DATA_DIR to keep history across restarts)'],
+    ['Disk cache', cacheStats().disk.enabled ? `${settings.cacheDir} (max ${settings.cacheDirMaxMegabytes} MB)` : settings.cacheDir ? `off (${settings.cacheDir} isn't writable)` : 'off'],
     ['OpenSubtitles for new installs', settings.openSubtitlesByDefault ? 'on' : 'off'],
-    ['Subtitles per language (default)', String(settings.maxSubtitlesPerLanguage)],
     ['Public URL', settings.publicUrl || 'from request headers'],
     ['Base path', settings.basePath || '/']
   ];
