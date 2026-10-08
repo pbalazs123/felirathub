@@ -96,6 +96,12 @@ section[data-tab].active { display: block; }
 .kind.install { color: hsl(270 70% 75%); border-color: hsl(270 40% 30%); background: hsl(270 40% 12%); }
 .kind.page { color: var(--muted-text); border-color: var(--border); background: var(--muted); }
 .kind.missing { color: var(--warn); border-color: hsl(38 60% 30%); background: hsl(38 60% 10%); }
+.kind.ok { color: var(--good); border-color: hsl(142 45% 25%); background: hsl(142 45% 9%); }
+.kind.error { color: var(--bad); border-color: hsl(0 50% 32%); background: hsl(0 50% 11%); }
+.kind.fast { color: hsl(200 85% 68%); border-color: hsl(200 50% 28%); background: hsl(200 50% 10%); font-weight: 600; }
+.kind.medium { color: hsl(50 90% 62%); border-color: hsl(50 55% 26%); background: hsl(50 55% 9%); font-weight: 600; }
+.kind.slow { color: hsl(340 80% 70%); border-color: hsl(340 45% 30%); background: hsl(340 45% 11%); font-weight: 600; }
+.badges { display: inline-flex; gap: 6px; justify-content: flex-end; }
 .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
 .toolbar input[type=text] { flex: 1; min-width: 220px; }
 .toolbar select { width: auto; min-width: 160px; }
@@ -103,12 +109,14 @@ section[data-tab].active { display: block; }
 .requests tr.request { cursor: pointer; }
 .requests tr.request:hover td, .requests tr.request.open td { background: var(--muted); }
 .requests tr.request.open td { border-bottom-color: transparent; }
-.requests td.title { max-width: 520px; overflow: hidden; text-overflow: ellipsis; }
+.requests td.title .clip { display: block; max-width: 520px; overflow: hidden; text-overflow: ellipsis; }
 .requests tr.details td { white-space: normal; background: var(--muted); padding: 6px 14px 16px; }
 .request-details { display: flex; gap: 20px; align-items: flex-start; }
-.request-details .poster { flex: none; width: 110px; }
+.request-details .poster { flex: none; width: 110px; text-align: center; }
 .request-details .poster img { display: block; width: 110px; height: 163px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); margin-bottom: 8px; }
 .request-details .poster .name { font-weight: 600; line-height: 1.3; }
+.request-details .imdb { display: inline-block; margin-top: 8px; padding: 2px 8px; border-radius: 5px; background: #f5c518; color: #000; font-weight: 800; font-size: .78rem; text-decoration: none; }
+.request-details .imdb:hover { filter: brightness(1.1); }
 .request-details .facts { flex: 1; min-width: 0; display: grid; gap: 4px; }
 .request-details .fact { display: grid; grid-template-columns: 70px 1fr; gap: 10px; }
 .request-details .fact .mono { font-family: ui-monospace, monospace; font-size: .8rem; word-break: break-all; }
