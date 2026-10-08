@@ -169,7 +169,7 @@ function configurePage({ baseUrl, initial, defaults, privacyNotice }) {
         <div class="card">
           <div class="card-title">Subtitles</div>
           <p class="card-description">How many subtitles are listed, and what happens with forced ones.</p>
-          ${setting({ label: 'Subtitles per language', description: 'The best matches for what you play are kept.', control: segmented('perLanguage', [[1, '1'], [2, '2']]) })}
+          ${setting({ label: 'Subtitles per language', description: 'The best matches for the file you play are kept. When the player doesn\'t send the file name, every subtitle for the video is listed.', control: segmented('perLanguage', [[1, '1'], [2, '2']]) })}
           ${setting({ label: 'Forced subtitles', description: 'Only cover what a Hungarian dub doesn\'t translate ("szinkronoshoz"). <strong>Show</strong>: under Hungarian, named "Magyar · Forced" (works everywhere). <strong>Separate group</strong>: their own "Forced" group in Nuvio (Stremio shows it as "Unknown").', control: segmented('forced', [['show', 'Show'], ['group', 'Separate group'], ['hide', 'Hide']]) })}
         </div>
       </section>
