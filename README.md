@@ -40,7 +40,7 @@
 | **Right episode, right film** | Other episodes, seasons and same-name films are filtered out |
 | **Season packs** | The episode is taken out of ZIP and RAR packs on the fly |
 | **Correct accents** | Everything arrives as UTF-8, so ő and ű display correctly |
-| **Best match first** | Up to 2 per language (all of them when the player sends no file name), ranked by release group, source, resolution and codec of what you play, shown as e.g. "Magyar · 92%" |
+| **Best match first** | Up to 2 per language (all of them when the player sends no file name), ranked like Bazarr: source and release group of what you play count most (and the cut for films), shown as e.g. "Magyar · 92%" |
 | **Forced subtitles** | Subtitles for the Hungarian dub ("szinkronoshoz") are shown as "Magyar · Forced", as their own group (Nuvio), or hidden |
 | **Dashboard** | Request history, source status, caches and system health |
 
