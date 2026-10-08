@@ -107,7 +107,7 @@ All optional.
 | `CACHE_DIR_MAX_MB` | `500` | Size limit of the disk cache |
 | `OPENSUBTITLES` | `1` | Set to `0` to switch OpenSubtitles off by default for new installs |
 | `ADDON_ID` | `community.felirathub` | Set to `community.supersubtitles` on a server that ran SuperSubtitles, so existing installs keep working |
-| `MAX_SUBS_PER_LANG` | `2` | Default number of subtitles per language (1 or 2) |
+| `MAX_SUBS_PER_LANG` | `2` | Default number of subtitles per language (1 or 2) when the player sends the file name |
 | `RATE_LIMIT_PER_SECOND` | `2` | Maximum requests per second to each site |
 | `SEARCH_CACHE_HOURS` | `12` | How long search results are cached (searches without results: 1 hour) |
 | `DEBUG_SUBS` | `0` | Set to `1` to log each subtitle search |
