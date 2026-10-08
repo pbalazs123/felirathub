@@ -1,64 +1,73 @@
 // Orders subtitles by how well they fit what's playing and keeps the best few per language, each
-// with a match percentage. Without a file name from the player, only the
-// episode check applies.
+// with a match percentage: how well the subtitle's release fits the played file (0% when the player
+// doesn't send the file name). Other episodes and seasons are dropped.
+//
+// The weights follow Bazarr (subliminal's scores): whether a subtitle is in sync depends on the
+// source and the release group, and for films on the edition (cut); resolution and codecs hardly
+// matter. A release group only counts together with its source, and WEB-DL, WEBRip and WEB are the
+// same source. For series a subtitle for the exact episode comes before a season pack with the same
+// match.
 
 const { describeRelease } = require('./release');
 
-const WEB_SOURCES = new Set(['web', 'webdl', 'webrip']);
+const WEIGHTS = {
+  episode: { source: 25, group: 20, edition: 0, resolution: 1, codec: 1 },
+  movie: { source: 30, group: 15, edition: 30, resolution: 1, codec: 1 }
+};
+// Ordering only: the exact episode before a season pack; forced subtitles (they cover just what a
+// dub doesn't translate) and extras (not the film itself) last.
+const EXACT_EPISODE_BONUS = 0.5;
+const FORCED_PENALTY = 100;
+const BONUS_PENALTY = 200;
 
-// How well one release fits the file being played (group, source, resolution, codec).
-function releasePoints(release, playing) {
+const FAMILIES = { webdl: 'web', webrip: 'web' };
+const family = (source) => FAMILIES[source] || source;
+
+// How well one release fits the played file.
+function releasePoints(release, playing, weights) {
   let points = 0;
-  if (playing.group && release.words.has(playing.group)) points += 3;
-  if (playing.source && release.source) {
-    if (playing.source === release.source) points += 2;
-    else if (WEB_SOURCES.has(playing.source) && WEB_SOURCES.has(release.source)) points += 1;
-  }
-  if (playing.resolution && playing.resolution === release.resolution) points += 1.5;
-  if (playing.codec && playing.codec === release.codec) points += 1;
+  const sameSource = Boolean(playing.source && release.source && family(playing.source) === family(release.source));
+  if (sameSource) points += weights.source;
+  if (sameSource && playing.group && release.words.has(playing.group)) points += weights.group;
+  if (weights.edition && release.edition === playing.edition) points += weights.edition;
+  if (playing.resolution && playing.resolution === release.resolution) points += weights.resolution;
+  if (playing.codec && playing.codec === release.codec) points += weights.codec;
   return points;
 }
 
-// Returns null for subtitles that clearly belong to another episode or season. A subtitle can fit
-// several releases (SuperSubtitles lists them); the best fitting one counts.
-function score(subtitle, wanted, playing) {
+// The most a subtitle can get for this file: only what the file name tells counts.
+function maxPoints(playing, weights) {
+  let points = weights.edition;
+  if (playing.source) points += weights.source;
+  if (playing.source && playing.group) points += weights.group;
+  if (playing.resolution) points += weights.resolution;
+  if (playing.codec) points += weights.codec;
+  return points;
+}
+
+// Returns null for subtitles that clearly belong to another episode or season, otherwise
+// { match, order }. A subtitle can fit several releases (SuperSubtitles lists them); the best
+// fitting one counts.
+function score(subtitle, wanted, playing, weights) {
   const release = describeRelease(subtitle.release);
 
   if (wanted.season !== null && release.season !== null && release.season !== wanted.season) return null;
   if (wanted.episode !== null && release.episode !== null && release.episode !== wanted.episode) return null;
 
-  let points = 0;
-  if (wanted.episode !== null && release.episode === wanted.episode) points += 4;
-  else if (release.season !== null && release.episode === null) points += 1; // season pack
-
+  // A file without episode number that isn't a season pack comes from a search for this episode.
+  const seasonPack = Boolean(subtitle.seasonPack) || (release.season !== null && release.episode === null);
+  let match = 0;
   if (playing) {
-    const fits = [release, ...(subtitle.releases || []).map(describeRelease)];
-    points += Math.max(...fits.map((fit) => releasePoints(fit, playing)));
+    // Listed releases like "720p-REWARD" don't repeat the source; it comes from the file name.
+    const fits = [release, ...(subtitle.releases || []).map((name) => {
+      const fit = describeRelease(name);
+      return { ...fit, source: fit.source || release.source, codec: fit.codec || release.codec, edition: fit.edition || release.edition };
+    })];
+    match += Math.max(...fits.map((fit) => releasePoints(fit, playing, weights)));
   }
-
-  if (subtitle.forced) points -= 3; // only covers what a dub doesn't translate
-  if (release.bonus) points -= 5; // extras, not the film or episode itself
-  return points;
-}
-
-// The most points a subtitle can get for this video: the episode, plus whatever the player's file
-// name tells (group, source, resolution, codec).
-function maxPoints(wanted, playing) {
-  let points = wanted.episode !== null ? 4 : 0;
-  if (playing) {
-    if (playing.group) points += 3;
-    if (playing.source) points += 2;
-    if (playing.resolution) points += 1.5;
-    if (playing.codec) points += 1;
-  }
-  return points;
-}
-
-// 0-100. Being for the right title already counts as BASE points, so a subtitle for the right
-// film without any matching release details isn't shown as 0%.
-const BASE = 4;
-function percentOf(points, max) {
-  return Math.max(0, Math.min(100, Math.round(((BASE + points) / (BASE + max)) * 100)));
+  const exactEpisode = wanted.episode !== null && !seasonPack;
+  const order = match + (exactEpisode ? EXACT_EPISODE_BONUS : 0) - (subtitle.forced ? FORCED_PENALTY : 0) - (release.bonus ? BONUS_PENALTY : 0);
+  return { match, order };
 }
 
 function toNumber(value) {
@@ -76,19 +85,23 @@ function rank(subtitles, options) {
     episode: toNumber(options.episode) ?? playing?.episode ?? null
   };
 
+  const weights = wanted.episode !== null ? WEIGHTS.episode : WEIGHTS.movie;
   const byLanguage = new Map(options.languages.map((language) => [language, []]));
   subtitles.forEach((subtitle, position) => {
-    const points = score(subtitle, wanted, playing);
-    if (points === null || !byLanguage.has(subtitle.lang)) return;
-    byLanguage.get(subtitle.lang).push({ subtitle, points, position });
+    const result = score(subtitle, wanted, playing, weights);
+    if (result === null || !byLanguage.has(subtitle.lang)) return;
+    byLanguage.get(subtitle.lang).push({ subtitle, ...result, position });
   });
 
-  const max = maxPoints(wanted, playing);
+  const max = playing ? maxPoints(playing, weights) : 0;
   const result = [];
   for (const entries of byLanguage.values()) {
-    entries.sort((a, b) => b.points - a.points || a.position - b.position);
+    entries.sort((a, b) => b.order - a.order || a.position - b.position);
     // Without the played file name nothing can be matched, so every subtitle shows 0%.
-    result.push(...entries.slice(0, options.perLanguage).map((entry) => ({ ...entry.subtitle, match: playing ? percentOf(entry.points, max) : 0 })));
+    result.push(...entries.slice(0, options.perLanguage).map((entry) => ({
+      ...entry.subtitle,
+      match: max ? Math.round((entry.match / max) * 100) : 0
+    })));
   }
   return result;
 }
