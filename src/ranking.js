@@ -87,7 +87,8 @@ function rank(subtitles, options) {
   const result = [];
   for (const entries of byLanguage.values()) {
     entries.sort((a, b) => b.points - a.points || a.position - b.position);
-    result.push(...entries.slice(0, options.perLanguage).map((entry) => ({ ...entry.subtitle, match: percentOf(entry.points, max) })));
+    // Without the played file name nothing can be matched, so every subtitle shows 0%.
+    result.push(...entries.slice(0, options.perLanguage).map((entry) => ({ ...entry.subtitle, match: playing ? percentOf(entry.points, max) : 0 })));
   }
   return result;
 }
