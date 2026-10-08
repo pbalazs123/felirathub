@@ -184,7 +184,7 @@ function configurePage({ baseUrl, initial, defaults, privacyNotice }) {
         </div>
         <div class="card">
           <div class="card-title">Ranking</div>
-          <p class="card-description">Subtitles matching the release you play (group, source, resolution, codec) come first, when the player tells the addon the file name. Each one shows how well it matches, e.g. "Magyar · 92%".</p>
+          <p class="card-description">Subtitles matching the release you play (group, source, resolution, codec) come first, when the player tells the addon the file name. Each one shows how well it matches, e.g. "Magyar · 92%" (0% when the player doesn't send the file name).</p>
         </div>
       </section>
 
