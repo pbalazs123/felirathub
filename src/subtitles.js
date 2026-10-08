@@ -1,5 +1,6 @@
 // Finds subtitles for one video: asks OpenSubtitles first and SuperSubtitles only for the languages
-// OpenSubtitles has nothing in (to keep the load on feliratok.eu low), drops other episodes and
+// OpenSubtitles has nothing (or nothing that fits the played file well) in, to keep the load on
+// feliratok.eu low; drops other episodes and
 // returns the best few per language in Stremio's format.
 
 const cinemeta = require('./cinemeta');
@@ -12,6 +13,9 @@ const { pad } = require('./text');
 
 const SOURCES = { opensubtitles: openSubtitles, supersubtitles: superSubtitles };
 const LANGUAGE_NAMES = { hun: 'Magyar', eng: 'English' };
+// With a file name from the player, SuperSubtitles is also asked when OpenSubtitles' best match in a
+// language is below this.
+const GOOD_MATCH = 70;
 
 // "tt0903747:1:2" -> { imdbId, season, episode }. Some players send season and episode
 // only in the video ID, others only in `extra`, so both are read.
@@ -96,10 +100,14 @@ async function findSubtitles({ type, id, extra = {}, config }) {
   const usable = (found) => (config.forced === 'hide' ? found.filter((subtitle) => !subtitle.forced) : found);
 
   // OpenSubtitles first; SuperSubtitles only for the languages still without a (non-forced)
-  // subtitle, ranked together with what OpenSubtitles found in those languages.
+  // subtitle, or, when the player sent the file name, without one that matches it at least
+  // GOOD_MATCH %. Both are then ranked together, so the better fit comes first.
   const fromOpenSubtitles = config.sources.opensubtitles ? usable(await searchSource('opensubtitles', query)) : [];
   let ranked = rank(fromOpenSubtitles, ranking);
-  const missing = config.languages.filter((language) => !ranked.some((subtitle) => subtitle.lang === language && !subtitle.forced));
+  const missing = config.languages.filter((language) => {
+    const best = Math.max(-1, ...ranked.filter((subtitle) => subtitle.lang === language && !subtitle.forced).map((subtitle) => subtitle.match));
+    return best < 0 || (extra.filename && best < GOOD_MATCH);
+  });
   if (missing.length && config.sources.supersubtitles) {
     const fromSuperSubtitles = usable(await searchSource('supersubtitles', query)).filter((subtitle) => missing.includes(subtitle.lang));
     ranked = rank([...fromOpenSubtitles, ...fromSuperSubtitles], ranking);
