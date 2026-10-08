@@ -113,6 +113,7 @@ section[data-tab].active { display: block; }
 .requests tr.request:hover td, .requests tr.request.open td { background: var(--muted); }
 .requests tr.request.open td { border-bottom-color: transparent; }
 .requests td.title .clip { display: block; max-width: 520px; overflow: hidden; text-overflow: ellipsis; }
+.requests td.client .clip { display: block; max-width: 220px; overflow: hidden; text-overflow: ellipsis; color: var(--muted-text); font-size: .85rem; }
 .requests tr.details td { white-space: normal; background: var(--muted); padding: 6px 14px 16px; }
 .request-details { display: flex; gap: 20px; align-items: flex-start; }
 .request-details .poster { flex: none; width: 110px; text-align: center; }
@@ -122,7 +123,7 @@ section[data-tab].active { display: block; }
 .request-details .imdb img { display: block; width: 52px; height: 26px; }
 .request-details .imdb:hover { filter: brightness(1.1); }
 .request-details .facts { flex: 1; min-width: 0; display: grid; gap: 4px; }
-.request-details .fact { display: grid; grid-template-columns: 70px 1fr; gap: 10px; }
+.request-details .fact { display: grid; grid-template-columns: 80px 1fr; gap: 10px; }
 .request-details .fact .mono { font-family: ui-monospace, monospace; font-size: .8rem; word-break: break-all; }
 .request-details h4 { margin: 12px 0 2px; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted-text); font-weight: 600; }
 .requests .file { display: flex; gap: 10px; align-items: baseline; word-break: break-word; }
@@ -216,7 +217,7 @@ function dashboardPage({ baseUrl }) {
   <section data-tab="history">
     <div class="title-row"><div><h2>History</h2><div class="muted" id="history-subtitle">All requests, newest first</div></div></div>
     <div class="toolbar">
-      <input type="text" id="history-search" placeholder="Search title, subtitle, app, country or IP…">
+      <input type="text" id="history-search" placeholder="Search title, subtitle, client ID, country or IP…">
       <select id="history-kind">
         <option value="">All types</option>
         <option value="request">Requests</option>
