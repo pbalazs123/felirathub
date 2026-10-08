@@ -40,8 +40,8 @@
 | **Right episode, right film** | Other episodes, seasons and same-name films are filtered out |
 | **Season packs** | The episode is taken out of ZIP and RAR packs on the fly |
 | **Correct accents** | Everything arrives as UTF-8, so ő and ű display correctly |
-| **Best match first** | Up to 2 per language (all of them when the player sends no file name), ranked like Bazarr: source and release group of what you play count most (and the cut for films), shown as e.g. "Magyar · 92%" |
-| **Forced subtitles** | Subtitles for the Hungarian dub ("szinkronoshoz") are shown as "Magyar · Forced", as their own group (Nuvio), or hidden |
+| **Best match first** | The best 2 per language (all of them when the player sends no file name), ranked like Bazarr: source and release group of what you play count most (and the cut for films), shown as e.g. "Magyar · 92%" |
+| **Forced subtitles** | Subtitles for the Hungarian dub ("szinkronoshoz") are listed as "Magyar · Forced", after the full ones |
 | **Dashboard** | Request history, source status, caches and system health |
 
 ### 🌍 Subtitle sources
@@ -57,7 +57,7 @@
 
 <p align="center">
   <img src="assets/screenshots/configure.png" alt="The configure page" width="820"/><br/>
-  <i>The configure page: languages, subtitles per language, forced subtitles and sources, then one click to install</i>
+  <i>The configure page: languages and sources, then one click to install</i>
 </p>
 
 <p align="center">
@@ -80,8 +80,7 @@
 
    Self-hosting? Use `https://<your-domain>/` instead.
 
-2. **Choose your settings**: languages, sources, 1 or 2 subtitles per language, and what happens with forced
-   subtitles.
+2. **Choose your settings**: languages and sources.
 
 3. **Install the addon**:
    - Click **Install in the Stremio app** and confirm the install prompt, or **Open in Stremio Web**
@@ -95,7 +94,7 @@
 
    [https://87ecf4bfda74-supersubtitles.baby-beamup.club/manifest.json](https://87ecf4bfda74-supersubtitles.baby-beamup.club/manifest.json)
 
-   This installs the default settings: Hungarian and English, both sources, 2 subtitles per language.
+   This installs the default settings: Hungarian and English, both sources.
 
 ### After installation
 
@@ -121,7 +120,7 @@ Open `http://localhost:7000/`, choose your settings and click **Install**. Updat
 
 ```bash
 docker run -d --name felirathub --restart unless-stopped -p 127.0.0.1:7000:7000 \
-  -e DATA_DIR=/data -e CACHE_DIR=/data/cache -v felirathub-data:/data \
+  -v felirathub-data:/data \
   pbalazs123/felirathub:latest
 ```
 
@@ -142,12 +141,11 @@ npm install && npm start
 
 ## 🎯 How It Works
 
-1. **Configure.** Open the addon's page and choose languages, sources, how many subtitles per language and whether to
-   show forced subtitles.
+1. **Configure.** Open the addon's page and choose languages and sources.
 2. **Install.** In the Stremio app, Stremio Web, or copy the URL into Nuvio. Your settings are part of the URL, so
    install again after changing them.
 3. **Watch.** When you play something, FeliratHUB looks up the title, asks OpenSubtitles (and SuperSubtitles for any
-   language still missing or matching your file less than 70%), drops wrong matches and returns the best 1 or 2 subtitles per language (every subtitle for the
+   language still missing or matching your file less than 70%), drops wrong matches and returns the best 2 subtitles per language (every subtitle for the
    video when the player doesn't send the file name).
 
 **Tips**
@@ -165,13 +163,12 @@ All settings are optional environment variables.
 
 | Variable | Default | What it does |
 |----------|---------|--------------|
-| `DATA_DIR` | – | Folder for the request history and statistics; without it they're kept in memory |
-| `CACHE_DIR` | – | Folder for the cache, so it survives restarts |
+| `DATA_DIR` | `/data` (Docker) | Folder for the request history and statistics (mount a volume there); if it isn't writable, they're kept in memory |
+| `CACHE_DIR` | `/data/cache` (Docker) | Folder for the disk cache, so it survives restarts; if it isn't writable, caching stays in memory |
 | `DASHBOARD_PASSWORD` | – | Enables the dashboard at `/dashboard` |
 | `PUBLIC_URL` | – | Public address, if links come out wrong behind a proxy |
 | `OPENSUBTITLES` | `1` | `0` turns OpenSubtitles off for new installs |
 | `ADDON_ID` | `community.felirathub` | Set to `community.supersubtitles` on a server that ran SuperSubtitles, so existing installs keep working |
-| `MAX_SUBS_PER_LANG` | `2` | Default number of subtitles per language (1 or 2) when the player sends the file name |
 
 <details>
 <summary>Advanced settings</summary>
@@ -180,7 +177,7 @@ All settings are optional environment variables.
 |----------|---------|--------------|
 | `PORT` | `7000` | Port to listen on |
 | `APP_BASE_PATH` | – | Serve under a subpath, e.g. `/felirathub` |
-| `HISTORY_DAYS` | `30` | Days the request history is kept (daily totals: 90). Without `DATA_DIR` it's also capped at 50,000 requests |
+| `HISTORY_DAYS` | `30` | Days the request history is kept (daily totals: 90). When kept in memory it's also capped at 50,000 requests |
 | `CACHE_DIR_MAX_MB` | `500` | Size limit of the disk cache |
 | `SEARCH_CACHE_HOURS` | `12` | How long search results are cached |
 | `RATE_LIMIT_PER_SECOND` | `2` | Requests per second to each source |
