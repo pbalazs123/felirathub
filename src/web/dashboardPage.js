@@ -102,6 +102,9 @@ section[data-tab].active { display: block; }
 .kind.medium { color: hsl(50 90% 62%); border-color: hsl(50 55% 26%); background: hsl(50 55% 9%); font-weight: 600; }
 .kind.slow { color: hsl(340 80% 70%); border-color: hsl(340 45% 30%); background: hsl(340 45% 11%); font-weight: 600; }
 .badges { display: inline-flex; gap: 6px; justify-content: flex-end; }
+/* Fixed widths so the status and time badges line up from row to row. */
+.badges .kind { text-align: center; min-width: 40px; }
+.badges .kind.fast, .badges .kind.medium, .badges .kind.slow { min-width: 62px; }
 .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
 .toolbar input[type=text] { flex: 1; min-width: 220px; }
 .toolbar select { width: auto; min-width: 160px; }
