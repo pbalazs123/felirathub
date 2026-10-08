@@ -119,9 +119,11 @@ section[data-tab].active { display: block; }
 .request-details .poster { flex: none; width: 110px; text-align: center; }
 .request-details .poster img { display: block; width: 110px; height: 163px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); margin-bottom: 8px; }
 .request-details .poster .name { font-weight: 600; line-height: 1.3; }
-.request-details .imdb { display: inline-block; margin-top: 8px; line-height: 0; }
-.request-details .imdb img { display: block; width: 52px; height: 26px; }
-.request-details .imdb:hover { filter: brightness(1.1); }
+.imdb { display: inline-block; line-height: 0; }
+.imdb img { display: block; width: 52px; height: 26px; }
+.imdb:hover { filter: brightness(1.1); }
+.request-details .imdb { margin-top: 8px; }
+.popular td.badge { width: 72px; }
 .request-details .facts { flex: 1; min-width: 0; display: grid; gap: 4px; }
 .request-details .fact { display: grid; grid-template-columns: 80px 1fr; gap: 10px; }
 .request-details .fact .mono { font-family: ui-monospace, monospace; font-size: .8rem; word-break: break-all; }
@@ -208,10 +210,7 @@ function dashboardPage({ baseUrl }) {
         <div><div class="muted small">Subtitle searches per day (lighter: found nothing)</div><div id="chart-days-searches"></div></div>
       </div>
     </div>
-    <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr))">
-      <div class="card"><h2>Popular requests (last 24 hours)</h2><div class="scroll"><table id="popular"></table></div></div>
-      <div class="card"><h2>Request source</h2><div class="scroll"><table id="blocks"></table></div></div>
-    </div>
+    <div class="card"><h2>Popular requests (last 24 hours)</h2><div class="scroll"><table class="popular" id="popular"></table></div></div>
   </section>
 
   <section data-tab="history">
