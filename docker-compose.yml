@@ -9,13 +9,11 @@ services:
       # Only reachable from this host; put a reverse proxy with HTTPS in front of it.
       - "127.0.0.1:7000:7000"
     environment:
-      DATA_DIR: /data                          # request history and daily statistics (SQLite)
-      CACHE_DIR: /data/cache                   # keeps caches across restarts
       # DASHBOARD_PASSWORD: change-me          # enables the admin dashboard at /dashboard
       # OPENSUBTITLES: "0"                     # OpenSubtitles off for new installs
       # PUBLIC_URL: https://subs.example.com   # only if links come out with the wrong address
     volumes:
-      - felirathub-data:/data
+      - felirathub-data:/data                  # request history (SQLite) and disk cache survive restarts
 
 volumes:
   felirathub-data:
