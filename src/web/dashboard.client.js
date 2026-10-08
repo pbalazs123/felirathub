@@ -70,6 +70,11 @@
   // yellow under 2 s, red from 2 s).
   function statusBadge(status) { return '<span class="kind ' + (status >= 500 ? 'error' : status >= 400 ? 'missing' : status >= 300 ? 'page' : 'ok') + '">' + status + '</span>'; }
   function timeBadge(ms) { return '<span class="kind ' + (ms < 500 ? 'fast' : ms < 2000 ? 'medium' : 'slow') + '">' + duration(ms) + '</span>'; }
+  function imdbBadge(id) {
+    if (!/^tt\d+$/.test(id || '')) return '';
+    return '<a class="imdb" href="https://www.imdb.com/title/' + id + '/" target="_blank" rel="noopener noreferrer" title="Open on IMDb">' +
+      '<img src="https://upload.wikimedia.org/wikipedia/commons/6/69/IMDB_Logo_2016.svg" width="52" height="26" alt="IMDb"></a>';
+  }
   function fact(label, value, cls) { return '<div class="fact"><span class="muted">' + label + '</span><span class="' + (cls || '') + '">' + value + '</span></div>'; }
 
   // Requests tab: one line per request (a search together with the subtitle downloads that followed it);
@@ -96,8 +101,7 @@
       details += '<div class="poster">' + (poster ? '<img ' + (open ? 'src' : 'data-src') + '="' + esc(poster) + '" alt="" onerror="this.remove()">' : '') +
         '<div class="name">' + esc((m && m.name ? m.name : '') + episodeOf(m)) + '</div>' +
         (m && m.year ? '<div class="muted small">(' + esc(m.year) + ')</div>' : '') +
-        (m && /^tt\d+$/.test(m.imdbId || '') ? '<a class="imdb" href="https://www.imdb.com/title/' + m.imdbId + '/" target="_blank" rel="noopener noreferrer" title="Open on IMDb">' +
-          '<img src="https://upload.wikimedia.org/wikipedia/commons/6/69/IMDB_Logo_2016.svg" width="52" height="26" alt="IMDb"></a>' : '') + '</div>';
+        imdbBadge(m && m.imdbId) + '</div>';
     }
     details += '<div class="facts">' + fact('Client ID', esc(r.client || 'unknown')) + fact('Request', esc(readableUrl(r.url)), 'mono') +
       (m ? fact('File', m.filename ? esc(m.filename) : '<span class="muted">not available</span>', m.filename ? 'mono' : '') : '');
@@ -173,10 +177,10 @@
         '<div class="num">' + (src.averageMs ? duration(src.averageMs) : '–') + '<small>average</small></div>' +
         (src.pausedUntil ? '<span class="pill warn" title="Too many errors; requests to this site wait">paused until ' + new Date(src.pausedUntil).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + '</span>' : '<span class="pill ' + pill + '">' + label + '</span>') + '</div>';
     }).join('');
-    $('popular').innerHTML = table([['Title'], ['Searches', 'num']],
-      s.popular.map(function (p) { return '<tr><td class="wrap">' + esc(p.title) + '</td><td class="num">' + p.count + '</td></tr>'; }));
-    $('blocks').innerHTML = table([['From'], ['Requests', 'num'], ['Searches', 'num'], ['Last seen']],
-      s.blocks.map(function (b) { return '<tr><td>' + who(b) + '</td><td class="num">' + b.requests + '</td><td class="num">' + b.searches + '</td><td>' + ago(b.lastSeen, s.now) + '</td></tr>'; }));
+    $('popular').innerHTML = table([[''], ['Title'], ['Searches', 'num']],
+      s.popular.map(function (p) {
+        return '<tr><td class="badge">' + imdbBadge(p.imdbId) + '</td><td class="wrap">' + esc((p.name || p.imdbId) + episodeOf(p)) + '</td><td class="num">' + p.count + '</td></tr>';
+      }));
   }
 
 
