@@ -1,5 +1,6 @@
 // Reads what a release or file name says about itself, e.g.
-// "Show.S02E05.1080p.WEB-DL.x265-GROUP.srt" -> season 2, episode 5, 1080p, webdl, hevc, "group".
+// "Show.S02E05.1080p.WEB-DL.x265-GROUP.srt" -> season 2, episode 5, 1080p, webdl, hevc, "group";
+// films also have an edition ("Movie.2010.Extended.1080p..." -> "extended", the normal cut -> "").
 
 const FILE_EXTENSION = /\.(srt|ass|ssa|vtt|sub|zip|rar|mkv|mp4|avi|m4v|ts)$/i;
 
@@ -17,6 +18,18 @@ const SOURCES = [
   ['bluray', /\b(blu[ ._-]?ray|bd[ ._-]?rip|br[ ._-]?rip|remux|bdremux)\b/],
   ['hdtv', /\b(hdtv|pdtv|dsr|tvrip)\b/],
   ['dvd', /\b(dvd[ ._-]?rip|dvd)\b/]
+];
+
+// Cuts of a film that differ in length (and so in subtitle timing). A remaster keeps the cut, so it
+// isn't one.
+const EDITIONS = [
+  ['extended', /\bextended\b/],
+  ['directors', /\bdirector'?s?[ ._-]?cut\b|\bdc\b/],
+  ['uncut', /\buncut\b/],
+  ['unrated', /\bunrated\b/],
+  ['final', /\bfinal[ ._-]cut\b/],
+  ['imax', /\bimax\b/],
+  ['special', /\bspecial[ ._-]edition\b/]
 ];
 
 const CODECS = [
@@ -51,6 +64,7 @@ function describeRelease(name) {
     resolution: firstMatch(RESOLUTIONS, text),
     source: firstMatch(SOURCES, text),
     codec: firstMatch(CODECS, text),
+    edition: firstMatch(EDITIONS, text),
     group: groupMatch ? groupMatch[1] : '',
     words: new Set(text.split(/[^a-z0-9]+/).filter(Boolean)),
     forced: /\bforced\b/.test(text),
