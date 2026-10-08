@@ -36,7 +36,7 @@
 
 | | |
 |---|---|
-| **Two sources, one list** | OpenSubtitles first; SuperSubtitles fills in the languages OpenSubtitles has nothing in |
+| **Two sources, one list** | OpenSubtitles first; SuperSubtitles fills in the languages OpenSubtitles has nothing in, or nothing that matches your file at least 70% |
 | **Right episode, right film** | Other episodes, seasons and same-name films are filtered out |
 | **Season packs** | The episode is taken out of ZIP and RAR packs on the fly |
 | **Correct accents** | Everything arrives as UTF-8, so ő and ű display correctly |
@@ -147,7 +147,7 @@ npm install && npm start
 2. **Install.** In the Stremio app, Stremio Web, or copy the URL into Nuvio. Your settings are part of the URL, so
    install again after changing them.
 3. **Watch.** When you play something, FeliratHUB looks up the title, asks OpenSubtitles (and SuperSubtitles for any
-   language still missing), drops wrong matches and returns the best 1 or 2 subtitles per language (every subtitle for the
+   language still missing or matching your file less than 70%), drops wrong matches and returns the best 1 or 2 subtitles per language (every subtitle for the
    video when the player doesn't send the file name).
 
 **Tips**
