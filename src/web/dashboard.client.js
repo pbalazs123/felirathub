@@ -93,7 +93,7 @@
         '<div class="name">' + esc((m && m.name ? m.name : '') + episodeOf(m)) + '</div><div class="muted small">' + esc(m && m.year ? m.year : '') + '</div></div>';
     }
     details += '<div class="facts">' + fact('App', esc(r.client || 'unknown')) + fact('Request', esc(readableUrl(r.url)), 'mono') +
-      (m && m.filename ? fact('File', esc(m.filename), 'mono') : '');
+      (m ? fact('File', m.filename ? esc(m.filename) : '<span class="muted">not available</span>', m.filename ? 'mono' : '') : '');
     if (r.kind === 'subtitles') {
       details += '<h4>Sent to the player (' + sent.length + ')</h4>' +
         (sent.length ? sent.map(function (f) { return fileLine(f); }).join('') : '<div class="muted">' + (r.results === 0 ? 'No subtitles found' : 'Not recorded (older request)') + '</div>');
