@@ -103,12 +103,20 @@ section[data-tab].active { display: block; }
 .requests tr.request { cursor: pointer; }
 .requests tr.request:hover td, .requests tr.request.open td { background: var(--muted); }
 .requests tr.request.open td { border-bottom-color: transparent; }
-.requests td.url { max-width: 360px; overflow: hidden; text-overflow: ellipsis; font-family: ui-monospace, monospace; font-size: .8rem; }
-.requests tr.details td { white-space: normal; background: var(--muted); padding: 4px 14px 14px; }
-.requests .full-url { font-family: ui-monospace, monospace; font-size: .8rem; word-break: break-all; margin-bottom: 4px; }
-.requests .files { display: grid; gap: 4px; margin-top: 8px; }
+.requests td.title { max-width: 520px; overflow: hidden; text-overflow: ellipsis; }
+.requests tr.details td { white-space: normal; background: var(--muted); padding: 6px 14px 16px; }
+.request-details { display: flex; gap: 20px; align-items: flex-start; }
+.request-details .poster { flex: none; width: 110px; }
+.request-details .poster img { display: block; width: 110px; height: 163px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); margin-bottom: 8px; }
+.request-details .poster .name { font-weight: 600; line-height: 1.3; }
+.request-details .facts { flex: 1; min-width: 0; display: grid; gap: 4px; }
+.request-details .fact { display: grid; grid-template-columns: 70px 1fr; gap: 10px; }
+.request-details .fact .mono { font-family: ui-monospace, monospace; font-size: .8rem; word-break: break-all; }
+.request-details h4 { margin: 12px 0 2px; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted-text); font-weight: 600; }
 .requests .file { display: flex; gap: 10px; align-items: baseline; word-break: break-word; }
+.requests .file .shown { flex: none; font-weight: 600; }
 .requests .file .pill { flex: none; background: var(--bg); border: 1px solid var(--border); min-width: 110px; text-align: center; }
+.history [hidden], .toolbar [hidden] { display: none; }
 .history input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--primary); }
 .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex: none; background: var(--muted-text); }
 .dot.healthy { background: var(--good); box-shadow: 0 0 8px hsl(142 60% 50% / .6); }
@@ -164,7 +172,6 @@ function dashboardPage({ baseUrl }) {
   <h1>${name} <span class="muted" style="font-weight:500">Dashboard</span></h1>
   <nav class="tabs" id="tabs">
     <button data-tab="overview" class="active">Overview</button>
-    <button data-tab="live">Live</button>
     <button data-tab="history">History</button>
     <button data-tab="caches">Caches</button>
     <button data-tab="system">System</button>
@@ -194,20 +201,13 @@ function dashboardPage({ baseUrl }) {
     </div>
   </section>
 
-  <section data-tab="live">
-    <div class="title-row"><div><h2>Live</h2><div class="muted" id="live-summary"></div></div></div>
-    <div class="grid" id="live-cards"></div>
-    <div class="card scroll" style="padding:0;margin-top:16px"><table class="requests" id="live-table"></table></div>
-  </section>
-
   <section data-tab="history">
-    <div class="title-row"><div><h2>History</h2><div class="muted" id="history-subtitle">Requests older than 5 minutes</div></div></div>
+    <div class="title-row"><div><h2>History</h2><div class="muted" id="history-subtitle">All requests, newest first</div></div></div>
     <div class="toolbar">
-      <input type="text" id="history-search" placeholder="Search URL, subtitle, title, country or IP…">
+      <input type="text" id="history-search" placeholder="Search title, subtitle, app, country or IP…">
       <select id="history-kind">
         <option value="">All types</option>
-        <option value="subtitles">Searches</option>
-        <option value="subtitle file">Downloads</option>
+        <option value="request">Requests</option>
         <option value="not found">Not found</option>
       </select>
       <span class="muted small" id="history-count"></span>
