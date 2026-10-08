@@ -1,5 +1,7 @@
 // Caches with expiry: always in memory (least recently used entries are evicted when a cache is
-// full), and optionally on disk under CACHE_DIR so they survive restarts. Values are JSON data or
+// full), and optionally on disk under CACHE_DIR so they survive restarts (also least recently used
+// first when the folder is over its limit: a file's time is refreshed when it is used, at most once
+// an hour). Values are JSON data or
 // Buffers. Concurrent lookups of the same key share one load. Failed loads are not cached.
 
 const crypto = require('node:crypto');
@@ -10,6 +12,7 @@ const settings = require('./settings');
 const registry = [];
 const diskRoot = settings.cacheDir ? path.resolve(settings.cacheDir) : '';
 const diskMaxBytes = settings.cacheDirMaxMegabytes * 1024 * 1024;
+const TOUCH_EVERY_MS = 60 * 60 * 1000;
 
 function sizeOf(value) {
   if (Buffer.isBuffer(value)) return value.length;
@@ -49,7 +52,7 @@ class Cache {
     this.forget(key);
     const size = sizeOf(value);
     if (size > this.maxBytes) return;
-    this.memory.set(key, { value, expiresAt, size });
+    this.memory.set(key, { value, expiresAt, size, touched: Date.now() });
     this.memoryBytes += size;
     for (const oldest of this.memory.keys()) {
       if (this.memory.size <= this.maxEntries && this.memoryBytes <= this.maxBytes) break;
@@ -74,7 +77,17 @@ class Cache {
     }
     this.memory.delete(key); // move to the most recently used end
     this.memory.set(key, entry);
+    if (this.dir && Date.now() - entry.touched > TOUCH_EVERY_MS) {
+      entry.touched = Date.now();
+      this.touch(key);
+    }
     return entry.value;
+  }
+
+  // Marks the disk copy as recently used, so the disk cleanup keeps it longer.
+  touch(key) {
+    const now = new Date();
+    fs.utimes(this.fileFor(key), now, now).catch(() => {});
   }
 
   async fromDisk(key) {
@@ -83,6 +96,7 @@ class Cache {
       const { value, expiresAt } = decode(await fs.readFile(this.fileFor(key), 'utf8'));
       if (expiresAt <= Date.now()) return undefined;
       this.remember(key, value, expiresAt);
+      this.touch(key);
       return value;
     } catch {
       return undefined;
@@ -155,7 +169,7 @@ class Cache {
   }
 }
 
-// Disk cleanup: delete expired files, then the oldest ones while over CACHE_DIR_MAX_MB.
+// Disk cleanup: delete expired files, then the least recently used ones while over CACHE_DIR_MAX_MB.
 async function cleanDisk() {
   if (!diskRoot) return { files: 0, bytes: 0 };
   const files = [];
