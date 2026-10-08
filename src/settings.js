@@ -32,7 +32,6 @@ module.exports = {
   dashboardPassword: String(env.DASHBOARD_PASSWORD || ''),
 
   // Defaults for users who haven't configured the addon.
-  maxSubtitlesPerLanguage: integer('MAX_SUBS_PER_LANG', 2, { max: 2 }),
   openSubtitlesByDefault: flag('OPENSUBTITLES', true),
 
   // Politeness towards the sites the addon reads from.
