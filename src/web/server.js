@@ -9,6 +9,7 @@ const manifest = require('../manifest');
 const stats = require('../stats');
 const auth = require('./auth');
 const delivery = require('../delivery');
+const { clientOf } = require('../client');
 const superSubtitles = require('../sources/supersubtitles');
 const userConfig = require('../userConfig');
 const { findSubtitles } = require('../subtitles');
@@ -22,7 +23,7 @@ const { version } = require('../../package.json');
 
 const PRIVACY_NOTICE =
   `to protect this service from abuse and overload, it keeps a request log for at most ${settings.historyDays} days: what ` +
-  'was requested, the country, and only the first part of the IP address (e.g. 203.•••.•.•), which does not identify ' +
+  'was requested, by which app (e.g. Stremio), the country, and only the first part of the IP address (e.g. 203.•••.•.•), which does not identify ' +
   'you. Full IP addresses are never stored and nothing is shared. The hosting provider may keep its own access logs.';
 
 function send(res, status, body, type = 'application/json; charset=utf-8') {
@@ -124,10 +125,11 @@ async function route(req, res, path) {
     const extra = rawExtra ? querystring.parse(rawExtra) : {};
     const config = userConfig.fromSegment(segment);
     res.track = { kind: 'subtitles', detail: [type, id].join(' · ') };
-    const { subtitles, title, served } = await findSubtitles({ type, id, extra, config });
+    const { subtitles, title, video, served } = await findSubtitles({ type, id, extra, config });
     if (title) res.track.detail = [title, extra.filename].filter(Boolean).join(' · ');
     res.track.results = subtitles.length;
     res.track.files = served;
+    if (video) res.track.meta = { ...video, filename: extra.filename || null };
     return send(res, 200, {
       subtitles: subtitles.map((s) => (s.url.startsWith('/') ? { ...s, url: baseUrl + s.url } : s))
     });
@@ -138,7 +140,7 @@ async function route(req, res, path) {
     try {
       const link = delivery.readLink(match[1]);
       res.track.detail = new URL(link.url).searchParams.get('fnev') || '';
-      res.track.files = [[res.track.detail || link.url, superSubtitles.name]];
+      res.track.files = [[res.track.detail || link.url, superSubtitles.name, null, `supersubtitles:${new URL(link.url).searchParams.get('felirat')}`]];
       const file = await delivery.getFile(link);
       return send(res, 200, file, 'application/x-subrip; charset=utf-8');
     } catch (error) {
@@ -236,7 +238,7 @@ function handler(req, res) {
 
   res.on('finish', () => {
     if (!res.track) return;
-    stats.recordRequest({ time: startedAt, ip: clientAddress(req), headers: req.headers, url: req.url, ...res.track, status: res.statusCode, ms: Date.now() - startedAt });
+    stats.recordRequest({ time: startedAt, ip: clientAddress(req), headers: req.headers, url: req.url, client: clientOf(req.headers), ...res.track, status: res.statusCode, ms: Date.now() - startedAt });
   });
   res.track = { kind: 'not found', detail: path };
 
