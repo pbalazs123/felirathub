@@ -6,11 +6,27 @@
 
 const crypto = require('node:crypto');
 const fs = require('node:fs/promises');
+const fsSync = require('node:fs');
 const path = require('node:path');
 const settings = require('./settings');
 
 const registry = [];
-const diskRoot = settings.cacheDir ? path.resolve(settings.cacheDir) : '';
+// The disk cache is used only if its folder is writable (e.g. a mounted volume with the wrong owner
+// isn't); otherwise everything stays in memory.
+function usableDiskRoot() {
+  if (!settings.cacheDir) return '';
+  const root = path.resolve(settings.cacheDir);
+  try {
+    fsSync.mkdirSync(root, { recursive: true });
+    fsSync.accessSync(root, fsSync.constants.W_OK);
+    return root;
+  } catch (error) {
+    console.error(`[cache] cannot use ${root} (${error.message}); caching in memory only. ` +
+      'Check that the folder is writable by the container user (uid 1000).');
+    return '';
+  }
+}
+const diskRoot = usableDiskRoot();
 const diskMaxBytes = settings.cacheDirMaxMegabytes * 1024 * 1024;
 const TOUCH_EVERY_MS = 60 * 60 * 1000;
 
