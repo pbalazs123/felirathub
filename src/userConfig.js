@@ -1,5 +1,6 @@
 // Per-user settings, carried in the addon URL as JSON: /<settings>/manifest.json.
-// Missing or invalid values fall back to the defaults. SuperSubtitles 1.x URLs ({"lang":"hun"}) still work.
+// Missing or invalid values fall back to the defaults. SuperSubtitles 1.x URLs ({"lang":"hun"}) still work;
+// settings older URLs may still carry (perLanguage, forced) are ignored, as those are fixed now.
 
 const settings = require('./settings');
 
@@ -9,9 +10,7 @@ const SOURCES = ['opensubtitles', 'supersubtitles'];
 function defaults() {
   return {
     languages: [...LANGUAGES],
-    sources: { opensubtitles: settings.openSubtitlesByDefault, supersubtitles: true },
-    perLanguage: settings.maxSubtitlesPerLanguage,
-    forced: 'show'
+    sources: { opensubtitles: settings.openSubtitlesByDefault, supersubtitles: true }
   };
 }
 
@@ -30,12 +29,6 @@ function normalize(input) {
     }
     if (!SOURCES.some((source) => config.sources[source])) config.sources.supersubtitles = true;
   }
-  const perLanguage = Number(input.perLanguage);
-  // At most 2 (older addon URLs may ask for up to 10).
-  if (Number.isInteger(perLanguage) && perLanguage >= 1) config.perLanguage = Math.min(perLanguage, 2);
-  // show: under their language with a [FORCED] label (works in every app); group: their own "forced"
-  // language (Nuvio shows it as "Forced"; Stremio doesn't know it); hide: left out.
-  if (['show', 'group', 'hide'].includes(input.forced)) config.forced = input.forced;
   return config;
 }
 
