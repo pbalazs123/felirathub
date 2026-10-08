@@ -13,7 +13,9 @@ function open() {
   const file = path.join(path.resolve(settings.dataDir), 'felirathub.db');
   try {
     fs.mkdirSync(path.dirname(file), { recursive: true });
-    return { db: new DatabaseSync(file), file };
+    const db = new DatabaseSync(file);
+    db.exec('CREATE TABLE IF NOT EXISTS write_check (x INTEGER); DROP TABLE write_check'); // read-only fails here
+    return { db, file };
   } catch (error) {
     console.error(`[database] cannot use ${file} (${error.message}); keeping history in memory only. ` +
       'Check that the folder exists and is writable by the container user (uid 1000).');
