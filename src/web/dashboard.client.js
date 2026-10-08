@@ -6,8 +6,8 @@
   var last = null;
 
   var KINDS = {
-    'subtitles': ['search', 'SEARCH'],
-    'subtitle file': ['download', 'DOWNLOAD'],
+    'subtitles': ['search', 'REQUEST'],
+    'subtitle file': ['search', 'REQUEST'],
     'manifest': ['install', 'INSTALL'],
     'configure': ['page', 'PAGE'],
     'not found': ['missing', '404']
@@ -52,28 +52,62 @@
   function readableUrl(url) { try { return decodeURIComponent(url || ''); } catch (e) { return url || ''; } }
   function files(r) { try { return r.files ? JSON.parse(r.files) : []; } catch (e) { return []; } }
 
-  // Live and History: one short line per request (type, IP, URL, subtitle count, status and
-  // duration, ended); a click opens the full URL and the subtitles served with their source.
-  var REQUEST_HEAD = [['Type'], ['IP'], ['URL'], ['Subs', 'num'], ['Status', 'num'], ['Ended', 'num']];
+  function meta(r) { try { return r.meta ? JSON.parse(r.meta) : null; } catch (e) { return null; } }
+  function episodeOf(m) { return m && m.season && m.episode ? ' S' + pad2(m.season) + 'E' + pad2(m.episode) : ''; }
+  // "The Matrix (tt0133093)", "Slow Horses S06E04 (tt5875444)"; older lines without it show their URL.
+  function titleOf(r, m) {
+    if (m && m.imdbId) return (m.name ? m.name + episodeOf(m) + ' (' + m.imdbId + ')' : m.imdbId + episodeOf(m));
+    return r.detail || readableUrl(r.url);
+  }
+  // Posters from Stremio's image service, loaded only when a line is opened.
+  function posterUrl(m) { return m && /^tt\d+$/.test(m.imdbId || '') ? 'https://images.metahub.space/poster/small/' + m.imdbId + '/img' : ''; }
+  function fileLine(f, after) {
+    return '<div class="file"><span class="pill">' + esc(f[1]) + '</span>' + (f[2] ? '<span class="shown">' + esc(f[2]) + '</span>' : '') +
+      '<span>' + esc(f[0]) + '</span>' + (after || '') + '</div>';
+  }
+  function fact(label, value, cls) { return '<div class="fact"><span class="muted">' + label + '</span><span class="' + (cls || '') + '">' + value + '</span></div>'; }
+
+  // History: one line per request (a search together with the subtitle downloads that followed it);
+  // a click opens the poster, the app, the request and the subtitles sent and downloaded.
+  var REQUEST_HEAD = [['Type'], ['IP'], ['Title'], ['Status', 'num'], ['Ended', 'num']];
   var expanded = {};
   function requestRows(r, now, first) {
     var cls = r.status >= 500 ? 'bad' : r.status >= 400 ? 'warn' : '';
-    var served = files(r);
-    var count = served.length || (r.kind === 'subtitles' ? r.results : null);
-    var url = readableUrl(r.url);
+    var m = meta(r);
     var open = Boolean(expanded[r.id]);
     var columns = REQUEST_HEAD.length + (first ? 1 : 0);
-    var list = served.length
-      ? served.map(function (f) { return '<div class="file"><span class="pill">' + esc(f[1]) + '</span><span>' + esc(f[0]) + '</span></div>'; }).join('')
-      : '<div class="muted">' + (r.kind === 'subtitles' ? (count === 0 ? 'No subtitles found' : 'Not recorded (older request)') : 'No subtitles served') + '</div>';
+    var sent = r.kind === 'subtitles' ? files(r) : [];
+    var byKey = {};
+    sent.forEach(function (f) { if (f[3]) byKey[f[3]] = f; });
+    var downloads = r.kind === 'subtitle file' ? [r] : (r.downloads || []);
+    var got = downloads.map(function (d) {
+      var f = files(d)[0] || [d.detail, 'SuperSubtitles'];
+      var match = f[3] && byKey[f[3]];
+      return fileLine([f[0], f[1], match ? match[2] : f[2]],
+        '<span class="muted small">' + ago(d.time + d.ms, now) + (d.status >= 400 ? ' · <span class="warn">HTTP ' + d.status + '</span>' : '') + '</span>');
+    });
+    var poster = posterUrl(m);
+    var details = '';
+    if (poster || (m && m.name)) {
+      details += '<div class="poster">' + (poster ? '<img ' + (open ? 'src' : 'data-src') + '="' + esc(poster) + '" alt="" onerror="this.remove()">' : '') +
+        '<div class="name">' + esc((m && m.name ? m.name : '') + episodeOf(m)) + '</div><div class="muted small">' + esc(m && m.year ? m.year : '') + '</div></div>';
+    }
+    details += '<div class="facts">' + fact('App', esc(r.client || 'unknown')) + fact('Request', esc(readableUrl(r.url)), 'mono') +
+      (m && m.filename ? fact('File', esc(m.filename), 'mono') : '');
+    if (r.kind === 'subtitles') {
+      details += '<h4>Sent to the player (' + sent.length + ')</h4>' +
+        (sent.length ? sent.map(function (f) { return fileLine(f); }).join('') : '<div class="muted">' + (r.results === 0 ? 'No subtitles found' : 'Not recorded (older request)') + '</div>');
+    }
+    if (r.kind === 'subtitles' || r.kind === 'subtitle file') {
+      details += '<h4>Downloaded through FeliratHUB (' + got.length + ')</h4>' + (got.join('') ||
+        '<div class="muted small">Nothing yet. OpenSubtitles files go straight from OpenSubtitles to the player, so only SuperSubtitles downloads show up here.</div>');
+    }
+    details += '</div>';
     return '<tr class="request' + (open ? ' open' : '') + '" data-request="' + r.id + '">' + (first || '') +
-      '<td>' + kind(r.kind) + '</td><td>' + who(r) + '</td><td class="url">' + esc(url || r.detail || '') + '</td>' +
-      '<td class="num">' + (count == null ? '' : count) + '</td>' +
+      '<td>' + kind(r.kind) + '</td><td>' + who(r) + '</td><td class="title">' + esc(titleOf(r, m)) + '</td>' +
       '<td class="num"><span class="' + cls + '">' + r.status + '</span> <span class="muted">· ' + duration(r.ms) + '</span></td>' +
       '<td class="num muted" title="' + dateTime(r.time) + '">' + ago(r.time + r.ms, now) + '</td></tr>' +
-      '<tr class="details"' + (open ? '' : ' hidden') + '><td colspan="' + columns + '">' +
-      '<div class="full-url">' + esc(url) + '</div>' + (r.detail && r.kind === 'subtitles' ? '<div class="muted small">' + esc(r.detail) + '</div>' : '') +
-      '<div class="files">' + list + '</div></td></tr>';
+      '<tr class="details"' + (open ? '' : ' hidden') + '><td colspan="' + columns + '"><div class="request-details">' + details + '</div></td></tr>';
   }
   function toggleRequest(e) {
     var row = e.target.closest('tr.request');
@@ -82,6 +116,8 @@
     if (expanded[id]) delete expanded[id]; else expanded[id] = true;
     row.classList.toggle('open', Boolean(expanded[id]));
     row.nextElementSibling.hidden = !expanded[id];
+    var img = row.nextElementSibling.querySelector('img[data-src]');
+    if (expanded[id] && img) { img.src = img.getAttribute('data-src'); img.removeAttribute('data-src'); }
   }
   function stat(label, value, hint, cls) {
     return '<div class="card stat"><div class="label">' + label + '</div><div class="value ' + (cls || '') + '">' + value + '</div>' + (hint ? '<div class="hint">' + hint + '</div>' : '') + '</div>';
@@ -136,20 +172,7 @@
       s.blocks.map(function (b) { return '<tr><td>' + who(b) + '</td><td class="num">' + b.requests + '</td><td class="num">' + b.searches + '</td><td>' + ago(b.lastSeen, s.now) + '</td></tr>'; }));
   }
 
-  function renderLive(s) {
-    var searches = s.live.filter(function (r) { return r.kind === 'subtitles'; });
-    var downloads = s.live.filter(function (r) { return r.kind === 'subtitle file'; });
-    var times = s.live.map(function (r) { return r.ms; });
-    var avg = times.length ? Math.round(times.reduce(function (a, b) { return a + b; }, 0) / times.length) : 0;
-    $('live-summary').textContent = searches.length + ' searches · ' + downloads.length + ' downloads in the last ' + s.liveMinutes + ' minutes';
-    $('live-cards').innerHTML = [
-      stat('Searches', searches.length, 'subtitle lists requested'),
-      stat('Downloads', downloads.length, 'subtitle files served'),
-      stat('Average response', duration(avg), 'all live requests')
-    ].join('');
-    $('live-table').innerHTML = table(REQUEST_HEAD,
-      s.live.map(function (r) { return requestRows(r, s.now); }), 'No requests in the last ' + s.liveMinutes + ' minutes.');
-  }
+
 
   var TILE_ICONS = {
     check: '<path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/><path d="m9 11 3 3L22 4"/>',
@@ -279,7 +302,7 @@
     var now = Date.now();
     historyState.page = h.page;
     $('history-count').textContent = h.total + ' entries';
-    if (last) $('history-subtitle').textContent = 'Requests older than 5 minutes, kept for ' + last.historyDays + ' days';
+    if (last) $('history-subtitle').textContent = 'All requests, newest first, kept for ' + last.historyDays + ' days';
     $('history-page').textContent = 'Page ' + h.page + ' of ' + h.pages;
     $('history-prev').disabled = h.page <= 1;
     $('history-next').disabled = h.page >= h.pages;
@@ -287,7 +310,7 @@
       [['<input type="checkbox" id="history-all" aria-label="Select all">']].concat(REQUEST_HEAD),
       h.entries.map(function (r) {
         return requestRows(r, now, '<td><input type="checkbox" data-id="' + r.id + '"' + (historyState.selected[r.id] ? ' checked' : '') + '></td>');
-      }), 'No history yet. Requests move here 5 minutes after they happen.');
+      }), 'No requests yet.');
     var boxes = document.querySelectorAll('#history-table input[data-id]');
     boxes.forEach(function (box) {
       box.addEventListener('change', function () {
@@ -315,7 +338,6 @@
     fetch(api + '/history/delete', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       .then(function () { historyState.selected = {}; loadHistory(); });
   }
-  $('live-table').addEventListener('click', toggleRequest);
   $('history-table').addEventListener('click', toggleRequest);
   $('range').addEventListener('click', function (e) {
     var v = e.target.getAttribute('data-value');
@@ -336,7 +358,7 @@
     if (ids.length && confirm('Delete ' + ids.length + ' selected entries?')) deleteHistory({ ids: ids });
   });
   $('history-clear').addEventListener('click', function () {
-    if (confirm('Delete the whole history? Live requests stay.')) deleteHistory({ all: true });
+    if (confirm('Delete the whole history?')) deleteHistory({ all: true });
   });
 
   function refresh() {
@@ -350,7 +372,6 @@
         if (!s) return;
         last = s;
         renderOverview(s);
-        renderLive(s);
         renderCaches(s);
         renderSystem(s);
         if (document.querySelector('section[data-tab="history"]').classList.contains('active')) loadHistory();
