@@ -149,7 +149,9 @@ async function route(req, res, path) {
     }
   }
 
-  if (path === '/logo.svg' || path === '/logo.png') {
+  // /favicon.ico is asked for by browsers on non-page addresses (e.g. the manifest) and by crawlers;
+  // browsers accept a PNG there.
+  if (path === '/logo.svg' || path === '/logo.png' || path === '/favicon.ico') {
     res.track = null;
     res.setHeader('Cache-Control', 'public, max-age=86400');
     return path === '/logo.svg' ? send(res, 200, logoSvg, 'image/svg+xml') : send(res, 200, logoPng, 'image/png');
