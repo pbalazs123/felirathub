@@ -153,7 +153,8 @@ npm install && npm start
 **Tips**
 
 - Stremio and Nuvio tell the addon the file name, so the subtitle for your exact release comes first.
-- Each subtitle is listed as its language and how well it matches, e.g. "Magyar · 92%"; the file names are in the
+- Each subtitle is listed as its language and how well it matches, e.g. "Magyar · 92%" (0% when the player
+  doesn't send the file name); the file names are in the
   dashboard.
 
 ---
