@@ -195,7 +195,7 @@ All settings are optional environment variables.
 ### 📊 Dashboard
 
 Set `DASHBOARD_PASSWORD` and open `/dashboard`. Tabs: **Overview** (source status, 7/30-day charts, popular titles),
-**History** (every request, newest first, searchable), **Caches** and **System**.
+**Requests** (every request, newest first, searchable), **Caches** and **System**.
 
 ### 🔐 Privacy
 
