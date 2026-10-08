@@ -17,12 +17,13 @@ LABEL org.opencontainers.image.title="FeliratHUB" \
       org.opencontainers.image.licenses="MIT"
 RUN rm -rf /usr/local/lib/node_modules /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
       /opt/yarn-* /usr/local/bin/yarn /usr/local/bin/yarnpkg
-# /data is owned by the node user, so a Docker volume mounted there is writable (DATA_DIR, CACHE_DIR).
+# /data is owned by the node user, so a Docker volume mounted there is writable. The history database
+# and the disk cache go there by default; if the folder isn't writable, both stay in memory.
 RUN mkdir -p /data && chown node:node /data
 WORKDIR /app
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
-ENV NODE_ENV=production PORT=7000
+ENV NODE_ENV=production PORT=7000 DATA_DIR=/data CACHE_DIR=/data/cache
 EXPOSE 7000
 USER node
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
