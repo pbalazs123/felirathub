@@ -98,10 +98,11 @@
     var poster = posterUrl(m);
     var details = '';
     if (poster || (m && m.name)) {
-      details += '<div class="poster">' + (poster ? '<img ' + (open ? 'src' : 'data-src') + '="' + esc(poster) + '" alt="" onerror="this.remove()">' : '') +
+      // The poster opens the title on IMDb.
+      var image = poster ? '<img class="cover" ' + (open ? 'src' : 'data-src') + '="' + esc(poster) + '" alt="" onerror="this.remove()">' : '';
+      details += '<div class="poster">' + (image && /^tt\d+$/.test(m.imdbId || '') ? '<a href="https://www.imdb.com/title/' + m.imdbId + '/" target="_blank" rel="noopener noreferrer" title="Open on IMDb">' + image + '</a>' : image) +
         '<div class="name">' + esc((m && m.name ? m.name : '') + episodeOf(m)) + '</div>' +
-        (m && m.year ? '<div class="muted small">(' + esc(m.year) + ')</div>' : '') +
-        imdbBadge(m && m.imdbId) + '</div>';
+        (m && m.year ? '<div class="muted small">(' + esc(m.year) + ')</div>' : '') + '</div>';
     }
     details += '<div class="facts">' + fact('Client ID', esc(r.client || 'unknown')) + fact('Request', esc(readableUrl(r.url)), 'mono') +
       (m ? fact('File', m.filename ? esc(m.filename) : '<span class="muted">not available</span>', m.filename ? 'mono' : '') : '');
