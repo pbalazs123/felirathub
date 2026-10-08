@@ -1,10 +1,10 @@
-// Statistics for the dashboard: live requests (last 5 minutes), request history, daily totals, the
+// Statistics for the dashboard: the request history (one line per request, newest first), daily totals, the
 // health of the sites the addon reads from, CPU and memory. Stored in the database (src/db.js).
 // Privacy (GDPR): nothing is recorded unless the dashboard is enabled; requests are deleted after
 // HISTORY_DAYS (default 30); only the first part of an IP address is kept ("203.•••.•.•",
 // "2001:•••"), one of a few hundred large blocks, which doesn't identify anyone; the full IP is
-// used only to look up the country and is never stored. Daily totals contain no personal data and
-// are kept for 90 days.
+// used only to look up the country and is never stored; of the User-Agent only a short app label
+// ("Stremio 4.4.168") is kept. Daily totals contain no personal data and are kept for 90 days.
 
 const os = require('node:os');
 const settings = require('./settings');
@@ -14,7 +14,9 @@ const { countryOf } = require('./geo');
 const ENABLED = Boolean(settings.dashboardPassword);
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
-const LIVE_MS = 5 * 60 * 1000;
+// A subtitle download belongs to the latest search from the same IP block that offered that
+// subtitle, within this time.
+const PARENT_WINDOW_MS = 6 * 60 * 60 * 1000;
 const DAILY_KEEP_DAYS = 90;
 const PAGE_SIZE = 50;
 // Without DATA_DIR the history lives in memory, so it is also capped by size: at most this many
@@ -36,7 +38,10 @@ function maskIp(ip) {
 const LISTED = "kind NOT IN ('manifest', 'configure')";
 
 const sql = {
-  insertRequest: db.prepare('INSERT INTO requests (time, kind, detail, results, status, ms, ip, country, url, files) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'),
+  insertRequest: db.prepare(`INSERT INTO requests (time, kind, detail, results, status, ms, ip, country, url, files, client, meta, parent)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`),
+  parentOf: db.prepare(`SELECT id FROM requests WHERE kind = 'subtitles' AND ip = ? AND time >= ? AND files LIKE ? ESCAPE '\\'
+    ORDER BY time DESC LIMIT 1`),
   addDaily: db.prepare(`INSERT INTO daily (day, requests, searches, found, downloads, installs, errors, total_ms) VALUES (?, 1, ?, ?, ?, ?, ?, ?)
     ON CONFLICT (day) DO UPDATE SET requests = requests + 1, searches = searches + excluded.searches, found = found + excluded.found,
     downloads = downloads + excluded.downloads, installs = installs + excluded.installs, errors = errors + excluded.errors, total_ms = total_ms + excluded.total_ms`),
@@ -48,7 +53,6 @@ const sql = {
   searchesSince: db.prepare(`SELECT COUNT(*) AS n, COALESCE(SUM(results > 0), 0) AS found, COALESCE(ROUND(AVG(ms)), 0) AS ms
     FROM requests WHERE kind = 'subtitles' AND time >= ?`),
   errorsSince: db.prepare('SELECT COUNT(*) AS n FROM requests WHERE status >= 500 AND time >= ?'),
-  live: db.prepare(`SELECT * FROM requests WHERE time >= ? AND ${LISTED} ORDER BY time DESC LIMIT 500`),
   popular: db.prepare(`SELECT detail AS title, COUNT(*) AS count FROM requests WHERE kind = 'subtitles' AND detail IS NOT NULL AND time >= ?
     GROUP BY detail ORDER BY count DESC LIMIT 10`),
   blocks: db.prepare(`SELECT ip, country, COUNT(*) AS requests, SUM(kind = 'subtitles') AS searches, MAX(time) AS lastSeen
@@ -64,11 +68,21 @@ const sql = {
   ]
 };
 
-// request: { time, ip, headers, kind, detail, results, status, ms, url, files: [[file name, source], ...] }
-function recordRequest({ ip, headers, time, kind, detail, results, status, ms, url, files }) {
+// The search a subtitle download came from (its file key, e.g. "supersubtitles:1791385505").
+function parentOf(ip, time, key) {
+  if (!key) return null;
+  const like = `%"${String(key).replace(/[\\%_"]/g, (c) => `\\${c}`)}"%`;
+  return sql.parentOf.get(ip, time - PARENT_WINDOW_MS, like)?.id ?? null;
+}
+
+// request: { time, ip, headers, kind, detail, results, status, ms, url, client,
+//   files: [[file name, source, name shown in the player, key], ...], meta: { imdbId, name, year, ... } }
+function recordRequest({ ip, headers, time, kind, detail, results, status, ms, url, client, files, meta }) {
   if (!ENABLED) return;
-  sql.insertRequest.run(time, kind, detail ?? null, results ?? null, status, ms, maskIp(ip), countryOf(ip, headers) || null,
-    url ?? null, files?.length ? JSON.stringify(files) : null);
+  const masked = maskIp(ip);
+  const parent = kind === 'subtitle file' ? parentOf(masked, time, files?.[0]?.[3]) : null;
+  sql.insertRequest.run(time, kind, detail ?? null, results ?? null, status, ms, masked, countryOf(ip, headers) || null,
+    url ?? null, files?.length ? JSON.stringify(files) : null, client ?? null, meta ? JSON.stringify(meta) : null, parent);
   const search = kind === 'subtitles';
   sql.addDaily.run(dayOf(time), search ? 1 : 0, search && results > 0 ? 1 : 0, kind === 'subtitle file' ? 1 : 0,
     kind === 'manifest' ? 1 : 0, status >= 500 ? 1 : 0, ms);
@@ -164,7 +178,6 @@ function snapshot() {
   return {
     now,
     startedAt,
-    liveMinutes: LIVE_MS / 60000,
     historyDays: settings.historyDays,
     hourly,
     daily,
@@ -177,7 +190,6 @@ function snapshot() {
       averageSearchMs: searches.ms,
       errors: sql.errorsSince.get(since(DAY)).n
     },
-    live: sql.live.all(since(LIVE_MS)),
     popular: sql.popular.all(since(DAY)),
     blocks: sql.blocks.all(since(DAY)),
     process: { cpuPercent: Math.round(cpuPercent * 10) / 10, rss: memory.rss, heapUsed: memory.heapUsed, node: process.version },
@@ -185,19 +197,21 @@ function snapshot() {
   };
 }
 
-// History filter as SQL: older than 5 minutes, optional type and text (searched in title, URL,
-// subtitles, IP, country and type).
+// History filter as SQL: one line per request (downloads that belong to a search are shown with
+// it), optional type ("request" or "not found") and text (searched in title, URL, subtitles, app,
+// IP, country and type).
 function historyFilter({ search = '', kind = '' }) {
-  const where = ['time < ?', LISTED];
-  const params = [Date.now() - LIVE_MS];
-  if (kind) {
+  const where = [LISTED, 'parent IS NULL'];
+  const params = [];
+  if (kind === 'request') where.push("kind IN ('subtitles', 'subtitle file')");
+  else if (kind) {
     where.push('kind = ?');
     params.push(String(kind));
   }
   const text = String(search).trim().toLowerCase();
   if (text) {
     const like = `%${text.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
-    const columns = ["COALESCE(detail, '')", "COALESCE(url, '')", "COALESCE(files, '')", 'ip', "COALESCE(country, '')", 'kind'];
+    const columns = ["COALESCE(detail, '')", "COALESCE(url, '')", "COALESCE(files, '')", "COALESCE(meta, '')", "COALESCE(client, '')", 'ip', "COALESCE(country, '')", 'kind'];
     where.push(`(${columns.map((column) => `LOWER(${column}) LIKE ? ESCAPE '\\'`).join(' OR ')})`);
     params.push(...columns.map(() => like));
   }
@@ -213,17 +227,22 @@ function history({ page = 1, search = '', kind = '' } = {}) {
   const entries = db
     .prepare(`SELECT * FROM requests WHERE ${where} ORDER BY time DESC LIMIT ? OFFSET ?`)
     .all(...params, PAGE_SIZE, (current - 1) * PAGE_SIZE);
+  // The subtitle downloads of the searches on this page.
+  const ids = entries.filter((entry) => entry.kind === 'subtitles').map((entry) => entry.id);
+  const downloads = ids.length
+    ? db.prepare(`SELECT * FROM requests WHERE parent IN (${ids.map(() => '?').join(',')}) ORDER BY time`).all(...ids)
+    : [];
+  for (const entry of entries) entry.downloads = downloads.filter((download) => download.parent === entry.id);
   return { total, page: current, pages, pageSize: PAGE_SIZE, entries };
 }
 
-// Deletes the given history entries, or all of them (live requests stay).
+// Deletes the given requests (with their downloads), or the whole history.
 function deleteHistory(ids) {
-  const cutoff = Date.now() - LIVE_MS;
-  if (!Array.isArray(ids)) return Number(db.prepare('DELETE FROM requests WHERE time < ?').run(cutoff).changes);
+  if (!Array.isArray(ids)) return Number(db.prepare(`DELETE FROM requests WHERE ${LISTED}`).run().changes);
   const numbers = ids.map(Number).filter(Number.isInteger).slice(0, 1000);
   if (!numbers.length) return 0;
-  const statement = db.prepare(`DELETE FROM requests WHERE time < ? AND id IN (${numbers.map(() => '?').join(',')})`);
-  return Number(statement.run(cutoff, ...numbers).changes);
+  const list = numbers.map(() => '?').join(',');
+  return Number(db.prepare(`DELETE FROM requests WHERE id IN (${list}) OR parent IN (${list})`).run(...numbers, ...numbers).changes);
 }
 
 module.exports = { MEMORY_HISTORY_ROWS, ENABLED, recordRequest, recordOutgoing, snapshot, history, deleteHistory, maskIp, siteStats };
