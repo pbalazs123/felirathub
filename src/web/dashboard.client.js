@@ -74,7 +74,7 @@
 
   // History: one line per request (a search together with the subtitle downloads that followed it);
   // a click opens the poster, the app, the request and the subtitles sent and downloaded.
-  var REQUEST_HEAD = [['Type'], ['IP'], ['Title'], ['Status', 'num'], ['Ended', 'num']];
+  var REQUEST_HEAD = [['Type'], ['IP'], ['Client ID'], ['Title'], ['Status', 'num'], ['Ended', 'num']];
   var expanded = {};
   function requestRows(r, now, first) {
     var m = meta(r);
@@ -99,7 +99,7 @@
         (m && /^tt\d+$/.test(m.imdbId || '') ? '<a class="imdb" href="https://www.imdb.com/title/' + m.imdbId + '/" target="_blank" rel="noopener noreferrer" title="Open on IMDb">' +
           '<img src="https://upload.wikimedia.org/wikipedia/commons/6/69/IMDB_Logo_2016.svg" width="52" height="26" alt="IMDb"></a>' : '') + '</div>';
     }
-    details += '<div class="facts">' + fact('App', esc(r.client || 'unknown')) + fact('Request', esc(readableUrl(r.url)), 'mono') +
+    details += '<div class="facts">' + fact('Client ID', esc(r.client || 'unknown')) + fact('Request', esc(readableUrl(r.url)), 'mono') +
       (m ? fact('File', m.filename ? esc(m.filename) : '<span class="muted">not available</span>', m.filename ? 'mono' : '') : '');
     if (r.kind === 'subtitles') {
       details += '<h4>Sent to the player (' + sent.length + ')</h4>' +
@@ -111,7 +111,7 @@
     }
     details += '</div>';
     return '<tr class="request' + (open ? ' open' : '') + '" data-request="' + r.id + '">' + (first || '') +
-      '<td>' + kind(r.kind) + '</td><td>' + who(r) + '</td><td class="title"><span class="clip">' + esc(titleOf(r, m)) + '</span></td>' +
+      '<td>' + kind(r.kind) + '</td><td>' + who(r) + '</td><td class="client"><span class="clip">' + esc(r.client || '–') + '</span></td><td class="title"><span class="clip">' + esc(titleOf(r, m)) + '</span></td>' +
       '<td class="num"><span class="badges">' + statusBadge(r.status) + timeBadge(r.ms) + '</span></td>' +
       '<td class="num muted" title="' + dateTime(r.time) + '">' + ago(r.time + r.ms, now) + '</td></tr>' +
       '<tr class="details"' + (open ? '' : ' hidden') + '><td colspan="' + columns + '"><div class="request-details">' + details + '</div></td></tr>';
