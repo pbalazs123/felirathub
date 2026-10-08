@@ -59,7 +59,8 @@
     if (m && m.imdbId) return (m.name ? m.name + episodeOf(m) + ' (' + m.imdbId + ')' : m.imdbId + episodeOf(m));
     return r.detail || readableUrl(r.url);
   }
-  // Posters from Stremio's image service, loaded only when a line is opened.
+  // Posters from Stremio's image service, loaded only when a line is opened; the IMDb logo is the
+  // official one, from Wikimedia Commons.
   function posterUrl(m) { return m && /^tt\d+$/.test(m.imdbId || '') ? 'https://images.metahub.space/poster/small/' + m.imdbId + '/img' : ''; }
   function fileLine(f, after) {
     return '<div class="file"><span class="pill">' + esc(f[1]) + '</span>' + (f[2] ? '<span class="shown">' + esc(f[2]) + '</span>' : '') +
@@ -95,7 +96,8 @@
       details += '<div class="poster">' + (poster ? '<img ' + (open ? 'src' : 'data-src') + '="' + esc(poster) + '" alt="" onerror="this.remove()">' : '') +
         '<div class="name">' + esc((m && m.name ? m.name : '') + episodeOf(m)) + '</div>' +
         (m && m.year ? '<div class="muted small">(' + esc(m.year) + ')</div>' : '') +
-        (m && /^tt\d+$/.test(m.imdbId || '') ? '<a class="imdb" href="https://www.imdb.com/title/' + m.imdbId + '/" target="_blank" rel="noopener noreferrer">IMDb</a>' : '') + '</div>';
+        (m && /^tt\d+$/.test(m.imdbId || '') ? '<a class="imdb" href="https://www.imdb.com/title/' + m.imdbId + '/" target="_blank" rel="noopener noreferrer" title="Open on IMDb">' +
+          '<img src="https://upload.wikimedia.org/wikipedia/commons/6/69/IMDB_Logo_2016.svg" width="52" height="26" alt="IMDb"></a>' : '') + '</div>';
     }
     details += '<div class="facts">' + fact('App', esc(r.client || 'unknown')) + fact('Request', esc(readableUrl(r.url)), 'mono') +
       (m ? fact('File', m.filename ? esc(m.filename) : '<span class="muted">not available</span>', m.filename ? 'mono' : '') : '');
