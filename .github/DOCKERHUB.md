@@ -20,10 +20,10 @@ season packs on the fly, drops subtitles for the wrong episode, and ranks the re
 - 🏆 **Release ranking**: like Bazarr, matching source and release group (and the cut for films) come first, with a match percentage
 - 🔍 **Right episode and film**: other episodes, seasons and same-name films are filtered out
 - 📦 **Season packs**: ZIP/RAR packs are unpacked in memory and the right episode is served
-- 🎭 **Forced subtitles** for the Hungarian dub are marked, ranked lower, or hidden
+- 🎭 **Forced subtitles** for the Hungarian dub are marked and listed after the full ones
 - 🔤 **Correct characters**: subtitles are converted to UTF-8, so ő and ű display correctly
 - 🎯 **Configure page** to choose sources, languages and options; install with one click
-- 💾 **Optional disk cache** (`CACHE_DIR`) that survives restarts
+- 💾 **History and disk cache** in `/data`: mount a volume there and they survive restarts
 - 📊 **Dashboard** with sign-in (`DASHBOARD_PASSWORD`): requests, sources' health, caches, CPU and memory; GDPR-friendly
 - 🔒 **Hardened**: non-root, no package managers in the image, zip-bomb and size limits
 
@@ -51,9 +51,6 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:7000:7000"
-    environment:
-      DATA_DIR: /data
-      CACHE_DIR: /data/cache
     volumes:
       - felirathub-data:/data
 
@@ -72,6 +69,7 @@ docker run -d \
   --name felirathub \
   --restart unless-stopped \
   -p 127.0.0.1:7000:7000 \
+  -v felirathub-data:/data \
   pbalazs123/felirathub:latest
 ```
 
@@ -101,13 +99,12 @@ All optional.
 | `APP_BASE_PATH` | empty | Serve under a subpath, e.g. `/felirathub` (no trailing slash) |
 | `PUBLIC_URL` | empty | Public address, e.g. `https://subs.example.com`, if links come out wrong behind a proxy |
 | `DASHBOARD_PASSWORD` | empty | Enables the dashboard at `/dashboard`; without it admin sign-in is disabled and nothing is recorded |
-| `DATA_DIR` | empty | Folder for the database (request history and daily statistics); without it they're kept in memory only |
-| `HISTORY_DAYS` | `30` | How many days the request history is kept (daily totals: 90 days). Without `DATA_DIR` it's also capped at 50,000 requests |
-| `CACHE_DIR` | empty | Folder for the disk cache (mount a volume); caches survive restarts |
+| `DATA_DIR` | `/data` | Folder for the database (request history and daily statistics); if it isn't writable, they're kept in memory only |
+| `HISTORY_DAYS` | `30` | How many days the request history is kept (daily totals: 90 days). When kept in memory it's also capped at 50,000 requests |
+| `CACHE_DIR` | `/data/cache` | Folder for the disk cache; caches survive restarts (if it isn't writable, they stay in memory) |
 | `CACHE_DIR_MAX_MB` | `500` | Size limit of the disk cache |
 | `OPENSUBTITLES` | `1` | Set to `0` to switch OpenSubtitles off by default for new installs |
 | `ADDON_ID` | `community.felirathub` | Set to `community.supersubtitles` on a server that ran SuperSubtitles, so existing installs keep working |
-| `MAX_SUBS_PER_LANG` | `2` | Default number of subtitles per language (1 or 2) when the player sends the file name |
 | `RATE_LIMIT_PER_SECOND` | `2` | Maximum requests per second to each site |
 | `SEARCH_CACHE_HOURS` | `12` | How long search results are cached (searches without results: 1 hour) |
 | `DEBUG_SUBS` | `0` | Set to `1` to log each subtitle search |
