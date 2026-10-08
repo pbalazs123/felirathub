@@ -44,16 +44,18 @@ function forPlayers(subtitle, name, video, config) {
   };
 }
 
-// "Magyar · 92%"; a second card with the same text gets "#2".
+// "Magyar · 92%"; when several cards would read the same, they are numbered "#1", "#2", ...
 function namesOf(subtitles) {
+  const bases = subtitles.map((subtitle) =>
+    [LANGUAGE_NAMES[subtitle.lang] || subtitle.lang, subtitle.forced ? 'Forced' : null, `${subtitle.match}%`].filter(Boolean).join(' · ')
+  );
+  const total = new Map();
+  bases.forEach((base) => total.set(base, (total.get(base) || 0) + 1));
   const used = new Map();
-  return subtitles.map((subtitle) => {
-    const base = [LANGUAGE_NAMES[subtitle.lang] || subtitle.lang, subtitle.forced ? 'Forced' : null, `${subtitle.match}%`]
-      .filter(Boolean)
-      .join(' · ');
-    const count = (used.get(base) || 0) + 1;
-    used.set(base, count);
-    return count === 1 ? base : `${base} #${count}`;
+  return bases.map((base) => {
+    if (total.get(base) === 1) return base;
+    used.set(base, (used.get(base) || 0) + 1);
+    return `${base} #${used.get(base)}`;
   });
 }
 
