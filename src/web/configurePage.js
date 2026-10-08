@@ -28,7 +28,7 @@ const ICONS = {
 };
 
 const SECTIONS = [
-  { id: 'general', title: 'General', description: 'Choose your languages and how subtitles are listed.' },
+  { id: 'general', title: 'General', description: 'Choose the languages you want subtitles in.' },
   { id: 'sources', title: 'Sources', description: 'Choose where subtitles come from and how they are ranked.' },
   { id: 'about', title: 'About', description: `What ${brand.name} does and how it handles your data.` }
 ];
@@ -114,8 +114,6 @@ function setting({ id, label, description, control }) {
   return `<div class="setting"><div>${id ? `<label for="${id}">${label}</label>` : `<span class="label">${label}</span>`}<p>${description}</p></div>${control}</div>`;
 }
 const toggle = (id) => `<label class="switch"><input type="checkbox" id="${id}"><span></span></label>`;
-const segmented = (id, options) =>
-  `<div class="segmented" id="${id}">${options.map(([value, text]) => `<button data-value="${value}">${text}</button>`).join('')}</div>`;
 
 function configurePage({ baseUrl, initial, defaults, privacyNotice }) {
   const data = JSON.stringify({ baseUrl, initial, defaults, version, sections: SECTIONS }).replace(/</g, '\\u003c');
@@ -165,12 +163,6 @@ function configurePage({ baseUrl, initial, defaults, privacyNotice }) {
           <p class="card-description">Which subtitle languages you get. At least one stays on.</p>
           ${setting({ id: 'lang-hun', label: 'Hungarian', description: 'Magyar feliratok', control: toggle('lang-hun') })}
           ${setting({ id: 'lang-eng', label: 'English', description: 'Angol feliratok', control: toggle('lang-eng') })}
-        </div>
-        <div class="card">
-          <div class="card-title">Subtitles</div>
-          <p class="card-description">How many subtitles are listed, and what happens with forced ones.</p>
-          ${setting({ label: 'Subtitles per language', description: 'The best matches for the file you play are kept. When the player doesn\'t send the file name, every subtitle for the video is listed.', control: segmented('perLanguage', [[1, '1'], [2, '2']]) })}
-          ${setting({ label: 'Forced subtitles', description: 'Only cover what a Hungarian dub doesn\'t translate ("szinkronoshoz"). <strong>Show</strong>: under Hungarian, named "Magyar · Forced" (works everywhere). <strong>Separate group</strong>: their own "Forced" group in Nuvio (Stremio shows it as "Unknown").', control: segmented('forced', [['show', 'Show'], ['group', 'Separate group'], ['hide', 'Hide']]) })}
         </div>
       </section>
 
