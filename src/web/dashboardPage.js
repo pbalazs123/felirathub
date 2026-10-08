@@ -117,7 +117,7 @@ section[data-tab].active { display: block; }
 .requests tr.details td { white-space: normal; background: var(--muted); padding: 6px 14px 16px; }
 .request-details { display: flex; gap: 20px; align-items: flex-start; }
 .request-details .poster { flex: none; width: 110px; text-align: center; }
-.request-details .poster img { display: block; width: 110px; height: 163px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); margin-bottom: 8px; }
+.request-details .poster > img { display: block; width: 110px; height: 163px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); margin-bottom: 8px; }
 .request-details .poster .name { font-weight: 600; line-height: 1.3; }
 .imdb { display: inline-block; line-height: 0; }
 .imdb img { display: block; width: 52px; height: 26px; }
