@@ -66,11 +66,11 @@ async function searchSource(source, query) {
   }
 }
 
-// Returns { subtitles } for players, and `title` and `served` ([[file name, source], ...]) for the
-// dashboard.
+// Returns { subtitles } for players, and for the dashboard `title`, `video` ({ imdbId, type, name,
+// year, season, episode }) and `served` ([[file name, source, name shown in the player, key], ...]).
 async function findSubtitles({ type, id, extra = {}, config }) {
   const video = readVideo(type, id, extra);
-  if (!/^tt\d+$/.test(video.imdbId)) return { subtitles: [], title: '', served: [] };
+  if (!/^tt\d+$/.test(video.imdbId)) return { subtitles: [], title: '', video: null, served: [] };
 
   const meta = await cinemeta.getMeta(type, video.imdbId).catch((error) => {
     console.error('[cinemeta]', error.message);
@@ -109,7 +109,8 @@ async function findSubtitles({ type, id, extra = {}, config }) {
   return {
     subtitles: ranked.map((subtitle, index) => forPlayers(subtitle, names[index], video, config)),
     title: describe(meta, video),
-    served: ranked.map((subtitle) => [subtitle.release, SOURCES[subtitle.source].name])
+    video: { type, ...video, name: meta?.name || null, year: Number.parseInt(meta?.year, 10) || null },
+    served: ranked.map((subtitle, index) => [subtitle.release, SOURCES[subtitle.source].name, names[index], `${subtitle.source}:${subtitle.sourceId}`])
   };
 }
 
