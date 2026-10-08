@@ -53,10 +53,11 @@ const sql = {
   searchesSince: db.prepare(`SELECT COUNT(*) AS n, COALESCE(SUM(results > 0), 0) AS found, COALESCE(ROUND(AVG(ms)), 0) AS ms
     FROM requests WHERE kind = 'subtitles' AND time >= ?`),
   errorsSince: db.prepare('SELECT COUNT(*) AS n FROM requests WHERE status >= 500 AND time >= ?'),
-  popular: db.prepare(`SELECT detail AS title, COUNT(*) AS count FROM requests WHERE kind = 'subtitles' AND detail IS NOT NULL AND time >= ?
-    GROUP BY detail ORDER BY count DESC LIMIT 10`),
-  blocks: db.prepare(`SELECT ip, country, COUNT(*) AS requests, SUM(kind = 'subtitles') AS searches, MAX(time) AS lastSeen
-    FROM requests WHERE time >= ? GROUP BY ip, country ORDER BY requests DESC LIMIT 20`),
+  // Searches per title (and episode), whatever file name was played.
+  popular: db.prepare(`SELECT json_extract(meta, '$.imdbId') AS imdbId, MAX(json_extract(meta, '$.name')) AS name,
+      json_extract(meta, '$.season') AS season, json_extract(meta, '$.episode') AS episode, COUNT(*) AS count
+    FROM requests WHERE kind = 'subtitles' AND meta IS NOT NULL AND time >= ?
+    GROUP BY imdbId, season, episode ORDER BY count DESC LIMIT 10`),
   hourly: db.prepare('SELECT (time - ?) / ? AS bucket, COUNT(*) AS count, ROUND(AVG(ms)) AS ms FROM requests WHERE time >= ? GROUP BY bucket'),
   daily: db.prepare('SELECT * FROM daily WHERE day >= ? ORDER BY day'),
   deleteOld: db.prepare('DELETE FROM requests WHERE time < ?'),
@@ -191,7 +192,6 @@ function snapshot() {
       errors: sql.errorsSince.get(since(DAY)).n
     },
     popular: sql.popular.all(since(DAY)),
-    blocks: sql.blocks.all(since(DAY)),
     process: { cpuPercent: Math.round(cpuPercent * 10) / 10, rss: memory.rss, heapUsed: memory.heapUsed, node: process.version },
     system: { cpus: os.cpus().length, loadAverage: os.loadavg(), totalMemory: os.totalmem(), freeMemory: os.freemem() }
   };
