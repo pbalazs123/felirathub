@@ -75,7 +75,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: ${{ env.DOCKERHUB_IMAGE }}
-          short-description: Hungarian & English subtitles for Stremio and Nuvio from feliratok.eu and OpenSubtitles
+          short-description: Hungarian & English subtitles for Stremio from feliratok.eu and OpenSubtitles
           readme-filepath: ./.github/DOCKERHUB.md
 
       # Release notes come from the annotated tag message (git tag -a vX.Y.Z).
