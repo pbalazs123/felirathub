@@ -20,7 +20,7 @@ episode, with correct Hungarian accents, best match first.
 - 🔍 **Right episode, right film**: other episodes, seasons and same-name films are filtered out
 - 📦 **Season packs**: the episode is taken out of ZIP and RAR packs on the fly
 - 🔤 **Correct accents**: everything arrives as UTF-8, so ő and ű display correctly
-- 🏆 **Best match first**: the best 2 per language (all of them when the player sends no file name), ranked like Bazarr: source and release group of what you play count most (and the cut for films), shown as e.g. "Magyar · 92%"
+- 🏆 **Best match first**: the best 2 per language (all of them when the player sends no file name), ranked by how well they fit what you play: the source and release group count most (and the cut for films), shown as e.g. "Magyar · 92%"
 - 🎭 **Forced subtitles**: subtitles for the Hungarian dub ("szinkronoshoz") are listed as "Magyar · Forced", after the full ones
 - 🎯 **Configure page** to choose languages and sources; install with one click
 - 💾 **History and disk cache** in `/data`: mount a volume there and they survive restarts
@@ -108,7 +108,6 @@ All optional.
 | `DASHBOARD_PASSWORD` | – | Enables the dashboard at `/dashboard`; without it nothing is recorded |
 | `PUBLIC_URL` | – | Public address, e.g. `https://subs.example.com`, if links come out wrong behind a proxy |
 | `OPENSUBTITLES` | `1` | `0` turns OpenSubtitles off for new installs |
-| `ADDON_ID` | `community.felirathub` | Set to `community.supersubtitles` on a server that ran SuperSubtitles, so existing installs keep working |
 | `PORT` | `7000` | Port to listen on |
 | `APP_BASE_PATH` | – | Serve under a subpath, e.g. `/felirathub` |
 | `HISTORY_DAYS` | `30` | Days the request history is kept (daily totals: 90). When kept in memory it's also capped at 50,000 requests |
@@ -124,8 +123,7 @@ docker compose pull && docker compose up -d
 ```
 
 > **Coming from SuperSubtitles?** FeliratHUB is a separate addon (id `community.felirathub`): install it from its
-> configure page and remove the old SuperSubtitles addon in Stremio/Nuvio. Replacing SuperSubtitles on the same
-> server? Set `ADDON_ID=community.supersubtitles` and existing installs simply become FeliratHUB.
+> configure page and remove the old SuperSubtitles addon in Stremio/Nuvio.
 
 ## ❓ Troubleshooting
 
