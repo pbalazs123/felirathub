@@ -3,6 +3,14 @@
 Release notes of FeliratHUB. Test builds (the `dev` image) have no entry here.
 Published releases are also listed at https://github.com/pbalazs123/felirathub/releases.
 
+## 0.1.1
+
+- **Your own subtitles.** Upload an `.srt`, `.vtt`, `.ass` or `.ssa` file on the dashboard's new **Uploads** tab, or with **Add subtitle** in an opened request, which fills in the title and the release. It is offered for its film or episode as the source "Uploaded", ranked with the others. Needs a writable data folder.
+- **Fixed: subtitles of unrelated shows.** When feliratok.eu didn't know a series, subtitles of other shows could be listed for it as a good match.
+- **Fixed: titles without a name.** New and less-known titles showed only their IMDb ID in the dashboard and were not searched on SuperSubtitles.
+- **Same-name series.** Of shows with the same name (e.g. the UK and US "The Office"), the one from the right year is used.
+- **Dashboard on phones.** Request cards keep their spacing on touch screens.
+
 ## 0.1.0
 
 The first release of **FeliratHUB**: Hungarian and English subtitles for Stremio, from several sources in one list.
