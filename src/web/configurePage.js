@@ -1,7 +1,7 @@
 // The configure page (/ and /configure, or /<settings>/configure to edit an installed addon).
 // A header with the logo, What's new and Dashboard; sections in a sidebar with the Install button
 // (#general, #sources, #about; a picker with previous/next and an install bar on phones); each
-// section has cards with settings. Install opens a dialog for the Stremio app, Stremio Web and Nuvio.
+// section has cards with settings. Install opens a dialog for the Stremio app, Stremio Web and other apps.
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -219,7 +219,7 @@ function configurePage({ baseUrl, initial, defaults, privacyNotice }) {
       <a class="btn primary" id="install-app" href="#">${ICONS.download} Install in the Stremio app</a>
       <a class="btn" id="install-web" href="#" target="_blank" rel="noopener">${ICONS.globe} Open in Stremio Web</a>
     </div>
-    <label class="muted small" for="manifest" style="display:block;margin-top:18px">Nuvio and other apps: copy the addon URL</label>
+    <label class="muted small" for="manifest" style="display:block;margin-top:18px">Other apps: copy the addon URL</label>
     <div class="copy-row">
       <input type="text" id="manifest" readonly>
       <button class="btn" id="copy">${ICONS.copy} Copy</button>
