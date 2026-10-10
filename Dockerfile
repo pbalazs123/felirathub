@@ -12,7 +12,7 @@ RUN npm ci --omit=dev --ignore-scripts \
 # they are removed (they bundle their own dependencies, which security scanners flag).
 FROM node:24-alpine
 LABEL org.opencontainers.image.title="FeliratHUB" \
-      org.opencontainers.image.description="FeliratHUB: Hungarian and English subtitles from SuperSubtitles (feliratok.eu) and OpenSubtitles for Stremio and Nuvio" \
+      org.opencontainers.image.description="FeliratHUB: Hungarian and English subtitles from SuperSubtitles (feliratok.eu) and OpenSubtitles for Stremio" \
       org.opencontainers.image.source="https://github.com/pbalazs123/felirathub" \
       org.opencontainers.image.licenses="MIT"
 RUN rm -rf /usr/local/lib/node_modules /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
