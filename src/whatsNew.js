@@ -1,4 +1,4 @@
-// Release notes for the "What's new" dialog: published GitHub releases (cached for 6 hours), plus
+// Release notes for the "What's new" dialog: published GitHub releases (cached for an hour), plus
 // CHANGELOG.md entries for versions that have no release yet.
 
 const fs = require('node:fs');
@@ -55,7 +55,7 @@ async function githubReleases() {
           url: release.html_url
         }));
     },
-    6 * 60 * 60 * 1000
+    60 * 60 * 1000 // an hour, so a new release shows up soon
   );
 }
 
