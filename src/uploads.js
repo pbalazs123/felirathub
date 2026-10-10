@@ -64,6 +64,7 @@ const sql = {
   forEpisode: db.prepare("SELECT * FROM uploads WHERE imdb = ? AND type = 'series' AND season = ? AND episode = ? ORDER BY id"),
   byId: db.prepare('SELECT * FROM uploads WHERE id = ?'),
   all: db.prepare('SELECT * FROM uploads ORDER BY id DESC LIMIT 1000'),
+  ids: db.prepare('SELECT id FROM uploads'),
   remove: db.prepare('DELETE FROM uploads WHERE id = ?')
 };
 
@@ -113,10 +114,11 @@ function add(input, buffer) {
   return sql.byId.get(id);
 }
 
-// Deletes uploads by ID; returns how many were deleted.
+// Deletes uploads by ID, or all of them when ids is null; returns how many were deleted.
 function remove(ids) {
   let deleted = 0;
-  for (const id of (Array.isArray(ids) ? ids : []).map(Number).filter(Number.isInteger).slice(0, 1000)) {
+  const wanted = ids === null ? sql.ids.all().map((row) => row.id) : (Array.isArray(ids) ? ids : []).map(Number).filter(Number.isInteger).slice(0, 1000);
+  for (const id of wanted) {
     const row = sql.byId.get(id);
     if (!row) continue;
     if (folder) fs.rmSync(fileOf(row), { force: true });
