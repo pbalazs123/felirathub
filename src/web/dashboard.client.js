@@ -64,7 +64,7 @@
   function posterUrl(m) { return m && /^tt\d+$/.test(m.imdbId || '') ? 'https://images.metahub.space/poster/small/' + m.imdbId + '/img' : ''; }
   function fileLine(f, after) {
     return '<div class="file"><span class="pill">' + esc(f[1]) + '</span>' + (f[2] ? '<span class="shown">' + esc(f[2]) + '</span>' : '') +
-      '<span>' + esc(f[0]) + '</span>' + (after || '') + '</div>';
+      '<span class="fname">' + esc(f[0]) + '</span>' + (after || '') + '</div>';
   }
   // Badges: HTTP status (green 2xx, amber 4xx, red 5xx) and response time (blue under 0.5 s,
   // yellow under 2 s, red from 2 s).
@@ -101,8 +101,8 @@
       // The poster opens the title on IMDb.
       var image = poster ? '<img class="cover" ' + (open ? 'src' : 'data-src') + '="' + esc(poster) + '" alt="" onerror="this.remove()">' : '';
       details += '<div class="poster">' + (image && /^tt\d+$/.test(m.imdbId || '') ? '<a href="https://www.imdb.com/title/' + m.imdbId + '/" target="_blank" rel="noopener noreferrer" title="Open on IMDb">' + image + '</a>' : image) +
-        '<div class="name">' + esc((m && m.name ? m.name : '') + episodeOf(m)) + '</div>' +
-        (m && m.year ? '<div class="muted small">(' + esc(m.year) + ')</div>' : '') + '</div>';
+        '<div class="caption"><div class="name">' + esc((m && m.name ? m.name : '') + episodeOf(m)) + '</div>' +
+        (m && m.year ? '<div class="muted small">(' + esc(m.year) + ')</div>' : '') + '</div></div>';
     }
     details += '<div class="facts">' + fact('Client ID', esc(r.client || 'unknown')) + fact('Request', esc(readableUrl(r.url)), 'mono') +
       (m ? fact('File', m.filename ? esc(m.filename) : '<span class="muted">not available</span>', m.filename ? 'mono' : '') : '');
@@ -116,9 +116,9 @@
     }
     details += '</div>';
     return '<tr class="request' + (open ? ' open' : '') + '" data-request="' + r.id + '">' + (first || '') +
-      '<td>' + kind(r.kind) + '</td><td>' + who(r) + '</td><td class="client"><span class="clip">' + esc(r.client || '–') + '</span></td><td class="title"><span class="clip">' + esc(titleOf(r, m)) + '</span></td>' +
-      '<td class="num"><span class="badges">' + statusBadge(r.status) + timeBadge(r.ms) + '</span></td>' +
-      '<td class="num muted" title="' + dateTime(r.time) + '">' + ago(r.time + r.ms, now) + '</td></tr>' +
+      '<td class="type">' + kind(r.kind) + '</td><td class="from">' + who(r) + '</td><td class="client"><span class="clip">' + esc(r.client || '–') + '</span></td><td class="title"><span class="clip">' + esc(titleOf(r, m)) + '</span></td>' +
+      '<td class="status num"><span class="badges">' + statusBadge(r.status) + timeBadge(r.ms) + '</span></td>' +
+      '<td class="ended num muted" title="' + dateTime(r.time) + '">' + ago(r.time + r.ms, now) + '</td></tr>' +
       '<tr class="details"' + (open ? '' : ' hidden') + '><td colspan="' + columns + '"><div class="request-details">' + details + '</div></td></tr>';
   }
   function toggleRequest(e) {
@@ -139,17 +139,46 @@
     return header + (rows.length ? rows.join('') : '<tr><td colspan="' + head.length + '" class="muted">' + (empty || 'Nothing yet') + '</td></tr>');
   }
 
-  // Tabs
+  // Tabs: a tab bar on wide screens, a picker + Previous/Next on small ones (like the sections of the
+  // configure page). The tab is in the address (#overview, #requests, ...), so links and the back
+  // button work.
+  var tabs = data.tabs;
   var tabButtons = document.querySelectorAll('#tabs button');
-  tabButtons.forEach(function (button) {
-    button.addEventListener('click', function () {
-      tabButtons.forEach(function (b) { b.classList.toggle('active', b === button); });
-      document.querySelectorAll('section[data-tab]').forEach(function (section) {
-        section.classList.toggle('active', section.getAttribute('data-tab') === button.getAttribute('data-tab'));
-      });
-      if (button.getAttribute('data-tab') === 'history') loadHistory();
-    });
-  });
+  var currentTab = tabs[0].id;
+  function hashOf(tab) { return tab.hash || tab.id; }
+  function tabFromHash() {
+    var hash = location.hash.replace('#', '');
+    var found = tabs.filter(function (tab) { return hashOf(tab) === hash || tab.id === hash; })[0];
+    return (found || tabs[0]).id;
+  }
+  function goToTab(id) {
+    var tab = tabs.filter(function (t) { return t.id === id; })[0];
+    if (!tab) return;
+    if (location.hash !== '#' + hashOf(tab)) location.hash = hashOf(tab); else showTab(id);
+  }
+  function showTab(id) {
+    currentTab = id;
+    tabButtons.forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-tab') === id); });
+    document.querySelectorAll('section[data-tab]').forEach(function (section) { section.classList.toggle('active', section.getAttribute('data-tab') === id); });
+    $('tab-picker').value = id;
+    var ids = tabs.map(function (tab) { return tab.id; });
+    var previous = tabs[ids.indexOf(id) - 1], next = tabs[ids.indexOf(id) + 1];
+    $('tab-prev').disabled = !previous;
+    $('tab-next').disabled = !next;
+    $('tab-prev').querySelector('span').textContent = previous ? previous.title : '—';
+    $('tab-next').querySelector('span').textContent = next ? next.title : '—';
+    if (id === 'history') loadHistory();
+  }
+  function stepTab(by) {
+    var ids = tabs.map(function (tab) { return tab.id; });
+    goToTab(ids[ids.indexOf(currentTab) + by]);
+    window.scrollTo(0, 0);
+  }
+  tabButtons.forEach(function (button) { button.addEventListener('click', function () { goToTab(button.getAttribute('data-tab')); }); });
+  $('tab-picker').addEventListener('change', function (e) { goToTab(e.target.value); });
+  $('tab-prev').addEventListener('click', function () { stepTab(-1); });
+  $('tab-next').addEventListener('click', function () { stepTab(1); });
+  window.addEventListener('hashchange', function () { showTab(tabFromHash()); });
 
   var range = 30;
   function renderDays(s) {
@@ -249,9 +278,11 @@
     $('caches').innerHTML = table([['Cache'], ['Entries', 'num'], ['Memory', 'num'], ['Limit', 'num'], ['Hits', 'num'], ['From disk', 'num'], ['Misses', 'num'], ['Evictions', 'num'], ['Hit rate', 'num'], ['Disk']],
       c.caches.map(function (x) {
         var found = x.hits + x.diskHits;
-        return '<tr><td>' + esc(x.label) + '</td><td class="num">' + x.entries + '</td><td class="num">' + bytes(x.bytes) + '</td><td class="num">' + bytes(x.maxBytes) + '</td>' +
-          '<td class="num">' + x.hits + '</td><td class="num">' + x.diskHits + '</td><td class="num">' + x.misses + '</td><td class="num">' + x.evictions + '</td><td class="num">' + percent(found, found + x.misses) + '</td>' +
-          '<td>' + (x.persisted ? '<span class="pill">yes</span>' : '<span class="muted">memory only</span>') + '</td></tr>';
+        // data-label: on phones each value is shown under its name instead of in a column.
+        var cell = function (label, value) { return '<td class="num" data-label="' + label + '">' + value + '</td>'; };
+        return '<tr><td>' + esc(x.label) + '</td>' + cell('Entries', x.entries) + cell('Memory', bytes(x.bytes)) + cell('Limit', bytes(x.maxBytes)) +
+          cell('Hits', x.hits) + cell('From disk', x.diskHits) + cell('Misses', x.misses) + cell('Evictions', x.evictions) + cell('Hit rate', percent(found, found + x.misses)) +
+          '<td data-label="Disk">' + (x.persisted ? '<span class="pill">yes</span>' : '<span class="muted">memory only</span>') + '</td></tr>';
       }));
   }
 
@@ -321,7 +352,7 @@
     $('history-table').innerHTML = table(
       [['<input type="checkbox" id="history-all" aria-label="Select all">']].concat(REQUEST_HEAD),
       h.entries.map(function (r) {
-        return requestRows(r, now, '<td><input type="checkbox" data-id="' + r.id + '"' + (historyState.selected[r.id] ? ' checked' : '') + '></td>');
+        return requestRows(r, now, '<td class="check"><input type="checkbox" data-id="' + r.id + '"' + (historyState.selected[r.id] ? ' checked' : '') + '></td>');
       }), 'No requests yet.');
     var boxes = document.querySelectorAll('#history-table input[data-id]');
     boxes.forEach(function (box) {
@@ -395,6 +426,7 @@
   $('logout').addEventListener('click', function () {
     fetch(data.baseUrl + '/dashboard/logout', { method: 'POST', credentials: 'same-origin' }).then(function () { location.reload(); });
   });
+  showTab(tabFromHash());
   refresh();
   setInterval(refresh, 5000);
 })();
