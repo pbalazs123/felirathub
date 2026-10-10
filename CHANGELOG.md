@@ -3,6 +3,11 @@
 Release notes of FeliratHUB. Test builds (the `dev` image) have no entry here.
 Published releases are also listed at https://github.com/pbalazs123/felirathub/releases.
 
+## 0.1.2
+
+- **Uploads tab like Requests.** Select uploaded subtitles with checkboxes, then **Delete selected**, or **Clear all**.
+- **Fixed: IDs written as `imdb:tt…`.** Some apps send the video ID in this form; those requests got no subtitles.
+
 ## 0.1.1
 
 - **Your own subtitles.** Upload an `.srt`, `.vtt`, `.ass` or `.ssa` file on the dashboard's new **Uploads** tab, or with **Add subtitle** in an opened request, which fills in the title and the release. It is offered for its film or episode as the source "Uploaded", ranked with the others. Needs a writable data folder.
