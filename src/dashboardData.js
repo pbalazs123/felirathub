@@ -3,6 +3,7 @@
 
 const stats = require('./stats');
 const health = require('./health');
+const uploads = require('./uploads');
 const net = require('./net');
 const settings = require('./settings');
 const { file: databaseFile, persistent } = require('./db');
@@ -57,6 +58,7 @@ function dashboardData() {
     ...stats.snapshot(),
     version,
     sources: sources(),
+    uploadsEnabled: uploads.enabled,
     cache: cacheStats(),
     health: systemHealth(),
     settings: settingsSummary()
