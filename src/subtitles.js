@@ -23,7 +23,8 @@ const PER_LANGUAGE = 2;
 // "tt0903747:1:2" -> { imdbId, season, episode }. Some players send season and episode
 // only in the video ID, others only in `extra`, so both are read.
 function readVideo(type, id, extra) {
-  const [imdbId, idSeason, idEpisode] = String(id || '').split(':');
+  // Some apps and metadata addons write the ID as "imdb:tt0903747".
+  const [imdbId, idSeason, idEpisode] = String(id || '').replace(/^imdb:/i, '').split(':');
   const isSeries = type === 'series';
   return {
     imdbId,
