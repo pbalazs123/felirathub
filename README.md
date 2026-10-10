@@ -40,7 +40,7 @@
 | **Right episode, right film** | Other episodes, seasons and same-name films are filtered out |
 | **Season packs** | The episode is taken out of ZIP and RAR packs on the fly |
 | **Correct accents** | Everything arrives as UTF-8, so ő and ű display correctly |
-| **Best match first** | The best 2 per language (all of them when the player sends no file name), ranked like Bazarr: source and release group of what you play count most (and the cut for films), shown as e.g. "Magyar · 92%" |
+| **Best match first** | The best 2 per language (all of them when the player sends no file name), ranked by how well they fit what you play: the source and release group count most (and the cut for films), shown as e.g. "Magyar · 92%" |
 | **Forced subtitles** | Subtitles for the Hungarian dub ("szinkronoshoz") are listed as "Magyar · Forced", after the full ones |
 | **Dashboard** | Request history, source status, caches and system health |
 
@@ -168,7 +168,6 @@ All settings are optional environment variables.
 | `DASHBOARD_PASSWORD` | – | Enables the dashboard at `/dashboard` |
 | `PUBLIC_URL` | – | Public address, if links come out wrong behind a proxy |
 | `OPENSUBTITLES` | `1` | `0` turns OpenSubtitles off for new installs |
-| `ADDON_ID` | `community.felirathub` | Set to `community.supersubtitles` on a server that ran SuperSubtitles, so existing installs keep working |
 
 <details>
 <summary>Advanced settings</summary>
