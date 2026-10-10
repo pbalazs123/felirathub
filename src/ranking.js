@@ -2,11 +2,10 @@
 // with a match percentage: how well the subtitle's release fits the played file (0% when the player
 // doesn't send the file name). Other episodes and seasons are dropped.
 //
-// The weights follow Bazarr (subliminal's scores): whether a subtitle is in sync depends on the
-// source and the release group, and for films on the edition (cut); resolution and codecs hardly
-// matter. A release group only counts together with its source, and WEB-DL, WEBRip and WEB are the
-// same source. For series a subtitle for the exact episode comes before a season pack with the same
-// match.
+// Whether a subtitle is in sync depends on the source and the release group, and for films on the
+// edition (cut); resolution and codecs hardly matter. A release group only counts together with
+// its source, and WEB-DL, WEBRip and WEB are the same source. For series a subtitle for the exact
+// episode comes before a season pack with the same match.
 
 const { describeRelease } = require('./release');
 
