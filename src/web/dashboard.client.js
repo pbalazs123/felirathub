@@ -344,26 +344,55 @@
       .then(function (res) { if (res.status === 401) { location.reload(); return null; } return res.json(); })
       .then(function (u) { if (u) renderUploads(u); });
   }
+  // The same select, "Delete selected" and "Clear all" as on the Requests tab.
+  var uploadsSelected = {};
   function renderUploads(u) {
     $('uploads-off').hidden = u.enabled;
     $('upload-open').disabled = !u.enabled;
+    $('uploads-count').textContent = u.uploads.length + (u.uploads.length === 1 ? ' subtitle' : ' subtitles');
+    $('uploads-clear').disabled = !u.uploads.length;
+    var listed = {};
+    u.uploads.forEach(function (x) { if (uploadsSelected[x.id]) listed[x.id] = true; });
+    uploadsSelected = listed; // forget the ones that are gone
     var now = Date.now();
-    $('uploads-table').innerHTML = table([['Title'], ['Language'], ['Fits release'], ['File'], ['Size', 'num'], ['Added', 'num'], ['']],
+    $('uploads-table').innerHTML = table([['<input type="checkbox" id="uploads-all" aria-label="Select all">', 'check'], ['Title'], ['Language'], ['Fits release'], ['File'], ['Size', 'num'], ['Added', 'num']],
       u.uploads.map(function (x) {
         var title = (x.title || x.imdb) + episodeOf(x) + (x.title ? ' (' + x.imdb + ')' : '');
-        return '<tr><td class="main wrap">' + esc(title) + '</td>' +
+        return '<tr><td class="check"><input type="checkbox" data-id="' + x.id + '"' + (uploadsSelected[x.id] ? ' checked' : '') + ' aria-label="Select"></td>' +
+          '<td class="main wrap">' + esc(title) + '</td>' +
           '<td class="lang" data-label="Language">' + esc(LANGUAGES[x.lang] || x.lang) + (x.forced ? ' · Forced' : '') + '</td>' +
           '<td class="wrap wide" data-label="Fits release">' + (x.release ? esc(x.release) : '<span class="muted">any release</span>') + '</td>' +
           '<td class="wrap wide" data-label="File">' + esc(x.filename) + '</td>' +
-          '<td class="num size" data-label="Size">' + bytes(x.size) + '</td><td class="num muted added" data-label="Added" title="' + dateTime(x.time) + '">' + ago(x.time, now) + '</td>' +
-          '<td class="del num"><button class="icon-btn" data-delete="' + x.id + '" title="Delete this subtitle" aria-label="Delete">🗑</button></td></tr>';
+          '<td class="num size" data-label="Size">' + bytes(x.size) + '</td><td class="num muted added" data-label="Added" title="' + dateTime(x.time) + '">' + ago(x.time, now) + '</td></tr>';
       }), u.enabled ? 'No uploaded subtitles yet.' : 'Uploading is off.');
+    var boxes = document.querySelectorAll('#uploads-table input[data-id]');
+    $('uploads-all').checked = boxes.length > 0 && Object.keys(uploadsSelected).length === boxes.length;
+    $('uploads-all').disabled = !boxes.length;
+    updateUploadsDelete();
   }
-  $('uploads-table').addEventListener('click', function (e) {
-    var button = e.target.closest('button[data-delete]');
-    if (!button || !confirm('Delete this subtitle? It will no longer be offered.')) return;
-    fetch(api + '/uploads/delete', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: [Number(button.getAttribute('data-delete'))] }) })
-      .then(loadUploads);
+  function updateUploadsDelete() {
+    var count = Object.keys(uploadsSelected).length;
+    $('uploads-delete').hidden = !count;
+    $('uploads-delete').textContent = 'Delete selected (' + count + ')';
+  }
+  $('uploads-table').addEventListener('change', function (e) {
+    var boxes = document.querySelectorAll('#uploads-table input[data-id]');
+    if (e.target.id === 'uploads-all') boxes.forEach(function (box) { box.checked = e.target.checked; });
+    uploadsSelected = {};
+    boxes.forEach(function (box) { if (box.checked) uploadsSelected[box.getAttribute('data-id')] = true; });
+    $('uploads-all').checked = boxes.length > 0 && Object.keys(uploadsSelected).length === boxes.length;
+    updateUploadsDelete();
+  });
+  function deleteUploads(body) {
+    fetch(api + '/uploads/delete', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function () { uploadsSelected = {}; loadUploads(); });
+  }
+  $('uploads-delete').addEventListener('click', function () {
+    var ids = Object.keys(uploadsSelected).map(Number);
+    if (ids.length && confirm('Delete ' + ids.length + ' selected ' + (ids.length === 1 ? 'subtitle' : 'subtitles') + '? They will no longer be offered.')) deleteUploads({ ids: ids });
+  });
+  $('uploads-clear').addEventListener('click', function () {
+    if (confirm('Delete all uploaded subtitles? They will no longer be offered.')) deleteUploads({ all: true });
   });
 
   var upload = { type: 'movie', lang: 'hun', file: null, lookup: null };
