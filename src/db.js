@@ -71,7 +71,7 @@ db.exec(`
   );
 `);
 
-// Columns added during the beta (older databases get them here): the request URL (without the
+// Columns added after the first database layout (older databases get them here): the request URL (without the
 // domain); the subtitles sent, as JSON [[file name, source, name shown in the player, key], ...];
 // the app that asked (e.g. "Stremio 4.4.168"); the video, as JSON { imdbId, type, name, year,
 // season, episode, filename }; and for a subtitle download, the search it belongs to.
