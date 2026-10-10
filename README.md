@@ -218,7 +218,6 @@ tip in [Self-Hosting](#-self-hosting).
 
 ## 🙏 Acknowledgments
 
-- [Thsandorh](https://github.com/Thsandorh) for the original Feliratok.eu addon this project grew out of
 - [SuperSubtitles](https://feliratok.eu) and [OpenSubtitles](https://www.opensubtitles.org) for the subtitles
 - IP geolocation by [DB-IP](https://db-ip.com) (CC BY 4.0)
 
