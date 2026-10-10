@@ -97,8 +97,11 @@ async function searchMovie({ names, year }) {
   return [];
 }
 
-// Show IDs for a name, best match first.
-async function findShows(name) {
+// Show IDs for a name, best match first; among equally good names ("The Office (UK) (2001)",
+// "The Office (US) (2005)") the one from the wanted year. When the site knows no such show it
+// answers with one row that is not a show ("Nincs találat", ID "-100x"), which is left out:
+// asked for that ID, the site lists subtitles of unrelated shows.
+async function findShows(name, year) {
   const shows = await net.getJson(pageUrl({ action: 'autoname', term: name, nyelv: 0 }));
   if (!Array.isArray(shows)) return [];
   const wanted = normalizeTitle(name);
@@ -108,9 +111,12 @@ async function findShows(name) {
     if (title.startsWith(wanted)) return 2;
     return title.includes(wanted) ? 1 : 0;
   };
+  const wantedYear = String(year || '').match(/\d{4}/)?.[0];
+  const fromYear = (show) => (wantedYear && String(show.name).includes(`(${wantedYear})`) ? 1 : 0);
   return shows
-    .map((show, position) => ({ id: String(show.ID), score: closeness(show), position }))
-    .sort((a, b) => b.score - a.score || a.position - b.position)
+    .filter((show) => /^\d+$/.test(String(show?.ID)))
+    .map((show, position) => ({ id: String(show.ID), score: closeness(show), year: fromYear(show), position }))
+    .sort((a, b) => b.score - a.score || b.year - a.year || a.position - b.position)
     .map((show) => show.id);
 }
 
@@ -157,10 +163,10 @@ async function seasonPages(showId, season, episode) {
   return unique(found);
 }
 
-async function searchSeries({ names, season, episode }) {
+async function searchSeries({ names, year, season, episode }) {
   if (!season || !episode) return [];
   for (const name of names) {
-    for (const showId of await findShows(name)) {
+    for (const showId of await findShows(name, year)) {
       let found;
       try {
         found = await seasonListing(showId, season, episode);
@@ -177,7 +183,8 @@ async function searchSeries({ names, season, episode }) {
 // query: { type, names, year, season, episode }
 function search(query) {
   if (!query.names.length) return Promise.resolve([]);
-  const key = JSON.stringify([query.type, query.names, query.year, query.season, query.episode]);
+  // "2": results cached before unknown shows were left out are not used any more.
+  const key = JSON.stringify([2, query.type, query.names, query.year, query.season, query.episode]);
   return searches
     .getOrLoad(
       key,
