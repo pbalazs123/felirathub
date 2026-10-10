@@ -77,6 +77,7 @@ function loginPage({ enabled, baseUrl }) {
 const TABS = [
   { id: 'overview', title: 'Overview' },
   { id: 'history', title: 'Requests', hash: 'requests' },
+  { id: 'uploads', title: 'Uploads' },
   { id: 'caches', title: 'Caches' },
   { id: 'system', title: 'System' }
 ];
@@ -190,6 +191,38 @@ section[data-tab].active { display: block; }
 .pager { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; color: var(--muted-text); font-size: .88rem; }
 footer { color: var(--muted-text); font-size: .78rem; padding: 0 24px 24px; max-width: 1400px; margin: 0 auto; }
 .block .label { flex-wrap: wrap; gap: 2px 12px; }
+/* Uploads: the list and the "Add a subtitle" dialog. */
+.uploads td.wrap { max-width: 360px; }
+.uploads .icon-btn, dialog .icon-btn { border: 0; background: none; color: var(--muted-text); cursor: pointer; padding: 6px; font-size: 1rem; }
+.uploads .icon-btn:hover { color: var(--bad); }
+.request-details .add-upload { margin-top: 12px; justify-self: start; }
+dialog { width: min(640px, 100% - 24px); max-height: 92vh; max-height: 92dvh; padding: 0; border: 1px solid var(--border); border-radius: 16px; background: var(--card); color: var(--text); overflow: auto; }
+dialog::backdrop { background: rgb(0 0 0 / .65); }
+dialog .head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+dialog .head h3 { font-size: 1.15rem; outline: 0; }
+dialog .body { padding: 18px 20px 20px; }
+.titlebox { display: flex; gap: 14px; align-items: center; min-height: 68px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); margin-bottom: 14px; }
+.titlebox img { width: 46px; height: 68px; object-fit: cover; border-radius: 6px; flex: none; }
+.titlebox .t { font-weight: 600; }
+.field { margin-bottom: 14px; min-width: 0; }
+.field label { display: block; font-weight: 600; margin-bottom: 6px; font-size: .9rem; }
+.field .hint { color: var(--muted-text); font-size: .8rem; margin-top: 4px; }
+.field-row { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; }
+.field.grow { flex: 1 1 150px; }
+.field.narrow { flex: 0 0 84px; }
+.field input.mono { font-family: ui-monospace, monospace; font-size: .85rem; }
+.check { display: inline-flex; gap: 8px; align-items: center; color: var(--muted-text); font-size: .9rem; margin-bottom: 22px; cursor: pointer; }
+.check input { width: 16px; height: 16px; accent-color: var(--primary); }
+.drop { border: 2px dashed hsl(220 5% 28%); border-radius: 12px; padding: 20px; text-align: center; color: var(--muted-text); background: var(--bg); cursor: pointer; }
+.drop .touch { display: none; }
+.drop.over { border-color: var(--primary); }
+.drop b { color: var(--text); }
+.drop .link { border: 0; background: none; color: var(--text); font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; padding: 0; }
+.drop .chosen { color: var(--text); font-size: .9rem; margin-top: 8px; word-break: break-all; }
+.drop .chosen:empty { display: none; }
+dialog .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+#upload-error:empty { display: none; }
+[hidden] { display: none !important; }
 .requests .file .badges, .requests .file .muted.small { flex: none; white-space: nowrap; }
 /* The five numbers of the overview: one row when there is room, 3 + 2 on tablets in portrait. */
 #overview-cards { grid-template-columns: repeat(5, minmax(0, 1fr)); }
@@ -212,6 +245,15 @@ footer { color: var(--muted-text); font-size: .78rem; padding: 0 24px 24px; max-
   .btn, select, input[type=text] { min-height: 44px; }
   .segmented button { padding: 10px 16px; }
   .history input[type=checkbox] { width: 20px; height: 20px; }
+  .uploads .icon-btn, dialog .icon-btn { min-width: 44px; min-height: 44px; }
+  /* 16px keeps iOS from zooming in when a field is tapped. */
+  dialog input[type=text], dialog input.mono { font-size: 16px; }
+  .check { min-height: 44px; }
+  .check input { width: 20px; height: 20px; }
+  /* Nothing can be dropped on a touch screen: the whole box opens the file picker. */
+  .drop { padding: 24px 16px; }
+  .drop .mouse { display: none; }
+  .drop .touch { display: inline; }
   .requests tr.request td { padding-top: 13px; padding-bottom: 13px; }
 }
 
@@ -257,13 +299,23 @@ footer { color: var(--muted-text); font-size: .78rem; padding: 0 24px 24px; max-
   .requests.history td[colspan].muted { padding: 16px 14px; }
 
   /* The other tables: one block per row, each value under its name. */
-  #caches, #caches tbody, #settings, #settings tbody, #settings tr { display: block; }
-  #caches tr:first-child, #settings tr:first-child { display: none; }
+  #caches, #caches tbody, #settings, #settings tbody, #settings tr, #uploads-table, #uploads-table tbody { display: block; }
+  #caches tr:first-child, #settings tr:first-child, #uploads-table tr:first-child { display: none; }
   #caches tr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 14px 0; border-bottom: 1px solid var(--border); }
   #caches tr:last-child, #settings tr:last-child { border-bottom: 0; }
   #caches td { display: block; padding: 0; border: 0; text-align: left; white-space: normal; }
   #caches td:first-child { grid-column: 1 / -1; font-weight: 600; }
   #caches td[data-label]::before { content: attr(data-label); display: block; color: var(--muted-text); font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; }
+  #uploads-table tr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px 10px; padding: 14px; border-bottom: 1px solid var(--border); }
+  #uploads-table td { display: block; padding: 0; border: 0; text-align: left; white-space: normal; word-break: break-word; }
+  #uploads-table td.main { grid-area: 1 / 1 / 2 / 3; font-weight: 600; align-self: center; }
+  #uploads-table td.del { grid-area: 1 / 3; }
+  #uploads-table td.lang { grid-area: 2 / 1; }
+  #uploads-table td.size { grid-area: 2 / 2; }
+  #uploads-table td.added { grid-area: 2 / 3; }
+  #uploads-table td.wide { grid-column: 1 / -1; }
+  #uploads-table td[data-label]::before { content: attr(data-label); display: block; color: var(--muted-text); font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; font-weight: 400; }
+  #uploads-table td[colspan] { grid-column: 1 / -1; }
   #settings tr { padding: 10px 0; border-bottom: 1px solid var(--border); }
   #settings td { display: block; padding: 0; border: 0; white-space: normal; }
   #settings td:first-child { color: var(--muted-text); font-size: .8rem; }
@@ -279,6 +331,19 @@ footer { color: var(--muted-text); font-size: .78rem; padding: 0 24px 24px; max-
   #overview-cards > :last-child:nth-child(odd), #cache-cards > :last-child:nth-child(odd) { grid-column: 1 / -1; }
   .stat .value { font-size: 1.35rem; }
   .tile { gap: 10px; }
+  /* The upload dialog as a sheet from the bottom, with everything under each other. */
+  dialog { width: 100%; max-width: 100%; max-height: 94vh; max-height: 94dvh; margin: auto 0 0; border-radius: 16px 16px 0 0; border-width: 1px 0 0; }
+  dialog .head { position: sticky; top: 0; z-index: 1; background: var(--card); padding: 12px 16px; }
+  dialog .body { padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); }
+  .field-row { gap: 0 12px; }
+  .field-row > .field:not(.narrow) { flex: 1 1 100%; }
+  .field.narrow { flex: 1 1 0; }
+  .field-row .segmented { display: flex; }
+  .field-row .segmented button { flex: 1; }
+  .check { margin-bottom: 14px; }
+  dialog .actions { flex-direction: column-reverse; }
+  dialog .actions .btn { width: 100%; justify-content: center; text-align: center; }
+  #upload-open { width: 100%; justify-content: center; text-align: center; }
   .tile .ico { width: 36px; height: 36px; border-radius: 10px; }
   .tile .value { font-size: 1.2rem; }
   .request-details { flex-direction: column; gap: 12px; }
@@ -353,6 +418,15 @@ function dashboardPage({ baseUrl }) {
     </div>
   </section>
 
+  <section data-tab="uploads">
+    <div class="title-row">
+      <div><h2>Uploads</h2><div class="muted">Your own subtitles. They are offered for their film or episode as the source "Uploaded".</div></div>
+      <button class="btn primary" id="upload-open">＋ Add subtitle</button>
+    </div>
+    <div class="banner" id="uploads-off" style="margin-bottom:14px" hidden>Uploading needs a data folder the server can write to. Mount a volume at /data (or set DATA_DIR), make sure the container's user (uid 1000) can write there, and restart.</div>
+    <div class="card scroll" style="padding:0"><table class="uploads" id="uploads-table"></table></div>
+  </section>
+
   <section data-tab="caches" class="stack">
     <div class="grid" id="cache-cards"></div>
     <div class="card">
@@ -389,6 +463,34 @@ function dashboardPage({ baseUrl }) {
     <button id="tab-next"><small>Next</small><span></span></button>
   </div>
 </main>
+<dialog id="upload-dialog">
+  <form id="upload-form" method="dialog">
+    <div class="head"><h3 tabindex="-1" autofocus>Add a subtitle</h3><button type="button" class="icon-btn" id="upload-close" aria-label="Close">✕</button></div>
+    <div class="body">
+      <p class="muted small" style="margin:0 0 14px">It will be offered for this film or episode from now on, ranked with the other sources.</p>
+      <div class="titlebox" id="upload-title"></div>
+      <div class="field-row">
+        <div class="field"><label>Type</label><div class="segmented" id="upload-type"><button type="button" data-value="movie">Film</button><button type="button" data-value="series">Series</button></div></div>
+        <div class="field grow"><label for="upload-imdb">IMDb ID</label><input type="text" id="upload-imdb" placeholder="tt0903747" autocomplete="off"></div>
+        <div class="field narrow" data-series><label for="upload-season">Season</label><input type="text" id="upload-season" inputmode="numeric" autocomplete="off"></div>
+        <div class="field narrow" data-series><label for="upload-episode">Episode</label><input type="text" id="upload-episode" inputmode="numeric" autocomplete="off"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Language</label><div class="segmented" id="upload-lang"><button type="button" data-value="hun">Magyar</button><button type="button" data-value="eng">English</button></div></div>
+        <label class="check"><input type="checkbox" id="upload-forced"> Forced (for the dub)</label>
+      </div>
+      <div class="field"><label for="upload-release">Fits release</label><input type="text" id="upload-release" class="mono" placeholder="e.g. 720p.BluRay.x264-GROUP" autocomplete="off">
+        <div class="hint">The release this subtitle is in sync with. Leave it empty if it fits any release.</div></div>
+      <div class="field"><label>Subtitle file</label>
+        <div class="drop" id="upload-drop"><span class="mouse">Drop an <b>.srt</b>, <b>.vtt</b>, <b>.ass</b> or <b>.ssa</b> file here, or <button type="button" class="link" id="upload-browse">browse</button></span><span class="touch">Tap to choose an <b>.srt</b>, <b>.vtt</b>, <b>.ass</b> or <b>.ssa</b> file</span>
+          <div class="chosen" id="upload-chosen"></div></div>
+        <input type="file" id="upload-file" hidden>
+        <div class="hint">It is converted to UTF-8 and stored on the server.</div></div>
+      <div class="bad small" id="upload-error"></div>
+      <div class="actions"><button type="button" class="btn" id="upload-cancel">Cancel</button><button type="submit" class="btn primary" id="upload-submit">Upload</button></div>
+    </div>
+  </form>
+</dialog>
 <footer>${name} v${version} · Requests are kept for at most ${settings.historyDays} days, with only the first part of each IP address. IP geolocation by <a href="https://db-ip.com" target="_blank" rel="noopener">DB-IP</a>.</footer>
 <script type="application/json" id="data">${JSON.stringify({ baseUrl, name: brand.name, tabs: TABS }).replace(/</g, '\\u003c')}</script>
 <script>${script}</script>`;
