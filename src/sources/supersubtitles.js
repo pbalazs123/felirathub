@@ -1,7 +1,7 @@
 // SuperSubtitles (feliratok.eu). Movies: the site's search result pages, checked against the title
-// and year. Series: the show is looked up by name, then one JSON listing of the season (the one the
-// site offers for its Kodi addon) gives episode subtitles and season packs (ZIP/RAR) together, with
-// every release each subtitle fits; the search result pages are only a fallback.
+// and year. Series: the show is looked up by name, then the site's JSON listing of the season gives
+// episode subtitles and season packs (ZIP/RAR) together, with every release each subtitle fits; the
+// search result pages are only a fallback.
 
 const cheerio = require('cheerio');
 const net = require('../net');
