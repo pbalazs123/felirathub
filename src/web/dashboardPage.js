@@ -72,6 +72,17 @@ function loginPage({ enabled, baseUrl }) {
   return page({ title: `${brand.name} - Dashboard`, body, head: loginStyles });
 }
 
+// The tabs: a tab bar on wide screens, a picker with Previous/Next on phones and small tablets (like
+// the sections of the configure page). The tab is also in the address (#requests).
+const TABS = [
+  { id: 'overview', title: 'Overview' },
+  { id: 'history', title: 'Requests', hash: 'requests' },
+  { id: 'caches', title: 'Caches' },
+  { id: 'system', title: 'System' }
+];
+const ICON_SLIDERS = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>';
+const ICON_LOGOUT = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>';
+
 const dashboardStyles = `
 <style>
 header { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; padding: 14px 24px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 5; }
@@ -112,8 +123,8 @@ section[data-tab].active { display: block; }
 .requests tr.request { cursor: pointer; }
 .requests tr.request:hover td, .requests tr.request.open td { background: var(--muted); }
 .requests tr.request.open td { border-bottom-color: transparent; }
-.requests td.title .clip { display: block; max-width: 520px; overflow: hidden; text-overflow: ellipsis; }
-.requests td.client .clip { display: block; max-width: 220px; overflow: hidden; text-overflow: ellipsis; color: var(--muted-text); font-size: .85rem; }
+.requests td.title .clip { display: block; max-width: min(520px, 34vw); overflow: hidden; text-overflow: ellipsis; }
+.requests td.client .clip { display: block; max-width: min(220px, 18vw); overflow: hidden; text-overflow: ellipsis; color: var(--muted-text); font-size: .85rem; }
 .requests tr.details td { white-space: normal; background: var(--muted); padding: 6px 14px 16px; }
 .request-details { display: flex; gap: 20px; align-items: flex-start; }
 .request-details .poster { flex: none; width: 110px; text-align: center; }
@@ -178,7 +189,115 @@ section[data-tab].active { display: block; }
 .chart text { fill: var(--muted-text); font-size: 11px; }
 .pager { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; color: var(--muted-text); font-size: .88rem; }
 footer { color: var(--muted-text); font-size: .78rem; padding: 0 24px 24px; max-width: 1400px; margin: 0 auto; }
-@media (max-width: 760px) { header { grid-template-columns: 1fr; } header .end { justify-content: flex-start; } }
+.block .label { flex-wrap: wrap; gap: 2px 12px; }
+.requests .file .badges, .requests .file .muted.small { flex: none; white-space: nowrap; }
+/* The five numbers of the overview: one row when there is room, 3 + 2 on tablets in portrait. */
+#overview-cards { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+@media (max-width: 960px) {
+  #overview-cards { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  #overview-cards > * { grid-column: span 2; }
+  #overview-cards > :nth-child(n+4) { grid-column: span 3; }
+}
+.mobile-nav, .tab-pager { display: none; }
+/* Previous/Next between tabs, the same look as on the configure page. */
+.tab-pager { gap: 10px; margin-top: 18px; }
+.tab-pager button { flex: 1; text-align: left; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); font: inherit; cursor: pointer; }
+.tab-pager button:last-child { text-align: right; }
+.tab-pager button:disabled { opacity: .4; cursor: default; }
+.tab-pager small { display: block; color: var(--muted-text); font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; }
+
+/* Touch screens (phones and tablets): bigger things to tap. */
+@media (pointer: coarse) {
+  .tabs button { padding: 10px 18px; }
+  .btn, select, input[type=text] { min-height: 44px; }
+  .segmented button { padding: 10px 16px; }
+  .history input[type=checkbox] { width: 20px; height: 20px; }
+  .requests tr.request td { padding-top: 13px; padding-bottom: 13px; }
+}
+
+/* Tablets in landscape and small laptops: the same layout, a little tighter. */
+@media (max-width: 1100px) {
+  header { padding: 12px 16px; gap: 12px; }
+  main { padding: 20px 16px; }
+  footer { padding: 0 16px 20px; }
+}
+
+/* Phones and tablets in portrait: a tab picker instead of the tab bar, and requests as cards. */
+@media (max-width: 860px) {
+  header { grid-template-columns: 1fr auto; }
+  header .tabs, header .end .label { display: none; }
+  header .end .btn { padding: 10px 12px; }
+  main { padding: 16px; }
+  footer { padding: 0 16px 24px; }
+  .mobile-nav { display: block; margin-bottom: 14px; }
+  .tab-pager { display: flex; }
+  .title-row h2 { font-size: 1.5rem; }
+  .toolbar input[type=text] { flex: 1 1 100%; min-width: 0; }
+  .toolbar select { flex: 1; min-width: 0; }
+
+  .requests.history, .requests.history tbody, .requests.history tr { display: block; }
+  .requests.history tr[hidden] { display: none; }
+  .requests.history th, .requests.history td { display: block; padding: 0; border: 0; white-space: normal; min-width: 0; }
+  .requests.history tr:first-child { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  .requests.history th { display: none; }
+  .requests.history th:first-child { display: flex; gap: 10px; align-items: center; }
+  .requests.history th:first-child::after { content: "Select all"; }
+  .requests.history tr.request { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto auto; gap: 6px 10px; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--border); }
+  .requests.history tr.request:hover td, .requests.history tr.request.open td { background: none; }
+  .requests.history tr.request.open { background: var(--muted); border-bottom-color: transparent; }
+  .requests.history td.check { grid-area: 1 / 1 / 4 / 2; align-self: start; padding-top: 2px; }
+  .requests.history td.type { grid-area: 1 / 2 / 2 / 4; }
+  .requests.history td.status { grid-area: 1 / 4 / 2 / 6; }
+  .requests.history td.title { grid-area: 2 / 2 / 3 / 6; font-weight: 600; }
+  .requests.history td.title .clip, .requests.history td.client .clip { max-width: none; }
+  .requests.history td.from { grid-area: 3 / 2; }
+  .requests.history td.client { grid-area: 3 / 3 / 4 / 5; }
+  .requests.history td.ended { grid-area: 3 / 5; }
+  .requests.history tr.details td { padding: 4px 14px 16px; border-bottom: 1px solid var(--border); background: var(--muted); }
+  .requests.history td[colspan].muted { padding: 16px 14px; }
+
+  /* The other tables: one block per row, each value under its name. */
+  #caches, #caches tbody, #settings, #settings tbody, #settings tr { display: block; }
+  #caches tr:first-child, #settings tr:first-child { display: none; }
+  #caches tr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+  #caches tr:last-child, #settings tr:last-child { border-bottom: 0; }
+  #caches td { display: block; padding: 0; border: 0; text-align: left; white-space: normal; }
+  #caches td:first-child { grid-column: 1 / -1; font-weight: 600; }
+  #caches td[data-label]::before { content: attr(data-label); display: block; color: var(--muted-text); font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; }
+  #settings tr { padding: 10px 0; border-bottom: 1px solid var(--border); }
+  #settings td { display: block; padding: 0; border: 0; white-space: normal; }
+  #settings td:first-child { color: var(--muted-text); font-size: .8rem; }
+
+  .requests .file { flex-wrap: wrap; }
+}
+
+/* Phones: two stat cards per row, and the details of a request stacked. */
+@media (max-width: 600px) {
+  .card { padding: 16px; }
+  #overview-cards, #cache-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  #overview-cards > *, #overview-cards > :nth-child(n+4) { grid-column: auto; }
+  #overview-cards > :last-child:nth-child(odd), #cache-cards > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .stat .value { font-size: 1.35rem; }
+  .tile { gap: 10px; }
+  .tile .ico { width: 36px; height: 36px; border-radius: 10px; }
+  .tile .value { font-size: 1.2rem; }
+  .request-details { flex-direction: column; gap: 12px; }
+  .request-details .poster { display: flex; gap: 12px; align-items: center; width: auto; text-align: left; }
+  .request-details .poster img.cover { width: 64px; height: 95px; margin: 0; }
+  .request-details .fact { grid-template-columns: 72px minmax(0, 1fr); }
+  .requests .file { flex-wrap: wrap; gap: 2px 10px; padding: 4px 0; }
+  .requests .file .fname { flex: 1 1 100%; }
+  .requests .file .pill { min-width: 0; }
+  /* Sources: name and status on one line, the three numbers under it. */
+  .source { grid-template-columns: auto repeat(3, minmax(0, 1fr)) auto; gap: 8px 12px; }
+  .source > :nth-child(1) { grid-area: 1 / 1; }
+  .source > :nth-child(2) { grid-area: 1 / 2 / 2 / 5; min-width: 0; }
+  .source > :nth-child(3) { grid-area: 2 / 2; }
+  .source > :nth-child(4) { grid-area: 2 / 3; }
+  .source > :nth-child(5) { grid-area: 2 / 4; }
+  .source > :nth-child(6) { grid-area: 1 / 5; }
+  .source .num { min-width: 0; text-align: left; }
+}
 </style>`;
 
 function dashboardPage({ baseUrl }) {
@@ -186,17 +305,17 @@ function dashboardPage({ baseUrl }) {
 <header>
   <h1>${name} <span class="muted" style="font-weight:500">Dashboard</span></h1>
   <nav class="tabs" id="tabs">
-    <button data-tab="overview" class="active">Overview</button>
-    <button data-tab="history">Requests</button>
-    <button data-tab="caches">Caches</button>
-    <button data-tab="system">System</button>
+    ${TABS.map((tab, index) => `<button data-tab="${tab.id}"${index ? '' : ' class="active"'}>${tab.title}</button>`).join('\n    ')}
   </nav>
   <div class="end">
-    <a class="btn" href="${escapeHtml(baseUrl)}/configure">Configure</a>
-    <button class="btn" id="logout">Logout</button>
+    <a class="btn" href="${escapeHtml(baseUrl)}/configure" title="Configure">${ICON_SLIDERS}<span class="label">Configure</span></a>
+    <button class="btn" id="logout" title="Logout">${ICON_LOGOUT}<span class="label">Logout</span></button>
   </div>
 </header>
 <main>
+  <div class="mobile-nav">
+    <select id="tab-picker" aria-label="Dashboard section">${TABS.map((tab) => `<option value="${tab.id}">${tab.title}</option>`).join('')}</select>
+  </div>
   <p class="muted small" id="status">Loading…</p>
 
   <section data-tab="overview" class="active stack">
@@ -205,7 +324,7 @@ function dashboardPage({ baseUrl }) {
     <div class="card">
       <div class="title-row" style="margin-bottom:6px"><h2 style="font-size:1.05rem">Last <span id="range-label">30</span> days</h2>
         <div class="segmented" id="range"><button data-value="7">7 days</button><button data-value="30" class="active">30 days</button></div></div>
-      <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(340px, 1fr))">
+      <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr))">
         <div><div class="muted small">Requests per day</div><div id="chart-days-requests"></div></div>
         <div><div class="muted small">Subtitle searches per day (lighter: found nothing)</div><div id="chart-days-searches"></div></div>
       </div>
@@ -241,7 +360,7 @@ function dashboardPage({ baseUrl }) {
         <div><h2>Cache performance</h2><p id="cache-subtitle">How often answers come from the cache instead of the sources</p></div></div>
       <div id="cache-performance"></div>
     </div>
-    <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(380px, 1fr))">
+    <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr))">
       <div class="card">
         <div class="card-head"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="hsl(262 83% 70%)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
           <div><h2>Request volume</h2><p>Last 24 hours (your local time)</p></div></div>
@@ -264,9 +383,14 @@ function dashboardPage({ baseUrl }) {
     <div class="card"><h2>System health</h2><div id="health"></div></div>
     <div class="card"><h2>Settings</h2><div class="scroll"><table id="settings"></table></div></div>
   </section>
+
+  <div class="tab-pager">
+    <button id="tab-prev"><small>Previous</small><span></span></button>
+    <button id="tab-next"><small>Next</small><span></span></button>
+  </div>
 </main>
 <footer>${name} v${version} · Requests are kept for at most ${settings.historyDays} days, with only the first part of each IP address. IP geolocation by <a href="https://db-ip.com" target="_blank" rel="noopener">DB-IP</a>.</footer>
-<script type="application/json" id="data">${JSON.stringify({ baseUrl, name: brand.name }).replace(/</g, '\\u003c')}</script>
+<script type="application/json" id="data">${JSON.stringify({ baseUrl, name: brand.name, tabs: TABS }).replace(/</g, '\\u003c')}</script>
 <script>${script}</script>`;
   return page({ title: `${brand.name} - Dashboard`, body, head: dashboardStyles });
 }
