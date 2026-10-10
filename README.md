@@ -101,8 +101,9 @@
 Subtitles show up automatically when you play a movie or episode. Your settings are part of the addon URL, so
 **install again** after changing them.
 
-> **Installed SuperSubtitles from the public instance?** Nothing to do: the addon at that address is now FeliratHUB
-> and keeps working; it shows the new name once Stremio or Nuvio refreshes it.
+> **Installed SuperSubtitles from the public instance?** The addon at that address is now FeliratHUB, a separate
+> addon. If subtitles stop showing up, remove the old SuperSubtitles addon in Stremio or Nuvio and install FeliratHUB
+> again from the configure page.
 
 ## 🐳 Self-Hosting
 
