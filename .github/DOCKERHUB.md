@@ -133,5 +133,4 @@ docker compose pull && docker compose up -d
 
 ---
 
-FeliratHUB is unofficial and not affiliated with SuperSubtitles, OpenSubtitles, Stremio or Nuvio. Thanks to
-[Thsandorh](https://github.com/Thsandorh) for the original Feliratok.eu addon this project grew out of.
+FeliratHUB is unofficial and not affiliated with SuperSubtitles, OpenSubtitles, Stremio or Nuvio.
