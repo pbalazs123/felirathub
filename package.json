@@ -1,6 +1,6 @@
 {
   "name": "felirathub",
-  "version": "1.0.0-beta.1",
+  "version": "0.1.0",
   "description": "FeliratHUB: Hungarian and English subtitles for Stremio and Nuvio from SuperSubtitles (feliratok.eu) and OpenSubtitles",
   "keywords": [
     "stremio",
