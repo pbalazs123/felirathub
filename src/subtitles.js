@@ -1,17 +1,18 @@
-// Finds subtitles for one video: asks OpenSubtitles first and SuperSubtitles only for the languages
-// OpenSubtitles has nothing (or nothing that fits the played file well) in, to keep the load on
-// feliratok.eu low; drops other episodes and
-// returns the best few per language in Stremio's format.
+// Finds subtitles for one video: the server's own uploaded subtitles, OpenSubtitles, and
+// SuperSubtitles only for the languages still without a subtitle (or without one that fits the
+// played file well), to keep the load on feliratok.eu low; drops other episodes and returns the
+// best few per language in Stremio's format.
 
 const cinemeta = require('./cinemeta');
 const delivery = require('./delivery');
 const openSubtitles = require('./sources/opensubtitles');
 const superSubtitles = require('./sources/supersubtitles');
+const uploads = require('./uploads');
 const settings = require('./settings');
 const { rank } = require('./ranking');
 const { pad } = require('./text');
 
-const SOURCES = { opensubtitles: openSubtitles, supersubtitles: superSubtitles };
+const SOURCES = { uploaded: uploads, opensubtitles: openSubtitles, supersubtitles: superSubtitles };
 const LANGUAGE_NAMES = { hun: 'Magyar', eng: 'English' };
 // With a file name from the player, SuperSubtitles is also asked when OpenSubtitles' best match in a
 // language is below this.
@@ -99,18 +100,19 @@ async function findSubtitles({ type, id, extra = {}, config }) {
     languages: config.languages
   };
 
-  // OpenSubtitles first; SuperSubtitles only for the languages still without a (non-forced)
-  // subtitle, or, when the player sent the file name, without one that matches it at least
-  // GOOD_MATCH %. Both are then ranked together, so the better fit comes first.
-  const fromOpenSubtitles = config.sources.opensubtitles ? await searchSource('opensubtitles', query) : [];
-  let ranked = rank(fromOpenSubtitles, ranking);
+  // Uploaded subtitles and OpenSubtitles first; SuperSubtitles only for the languages still without
+  // a (non-forced) subtitle, or, when the player sent the file name, without one that matches it at
+  // least GOOD_MATCH %. All are then ranked together, so the better fit comes first.
+  const uploaded = uploads.search(query);
+  const firstChoice = [...uploaded, ...(config.sources.opensubtitles ? await searchSource('opensubtitles', query) : [])];
+  let ranked = rank(firstChoice, ranking);
   const missing = config.languages.filter((language) => {
     const best = Math.max(-1, ...ranked.filter((subtitle) => subtitle.lang === language && !subtitle.forced).map((subtitle) => subtitle.match));
     return best < 0 || (extra.filename && best < GOOD_MATCH);
   });
   if (missing.length && config.sources.supersubtitles) {
     const fromSuperSubtitles = (await searchSource('supersubtitles', query)).filter((subtitle) => missing.includes(subtitle.lang));
-    ranked = rank([...fromOpenSubtitles, ...fromSuperSubtitles], ranking);
+    ranked = rank([...firstChoice, ...fromSuperSubtitles], ranking);
   }
 
   if (settings.debug) {
@@ -121,7 +123,7 @@ async function findSubtitles({ type, id, extra = {}, config }) {
     subtitles: ranked.map((subtitle, index) => forPlayers(subtitle, names[index], video)),
     title: describe(meta, video),
     video: { type, ...video, name: meta?.name || null, year: Number.parseInt(meta?.year, 10) || null },
-    served: ranked.map((subtitle, index) => [subtitle.release, SOURCES[subtitle.source].name, names[index], `${subtitle.source}:${subtitle.sourceId}`])
+    served: ranked.map((subtitle, index) => [subtitle.filename || subtitle.release, SOURCES[subtitle.source].name, names[index], `${subtitle.source}:${subtitle.sourceId}`])
   };
 }
 
