@@ -14,6 +14,8 @@ const superSubtitles = require('../sources/supersubtitles');
 const userConfig = require('../userConfig');
 const { findSubtitles } = require('../subtitles');
 const { whatsNew } = require('../whatsNew');
+const uploads = require('../uploads');
+const cinemeta = require('../cinemeta');
 const { dashboardData } = require('../dashboardData');
 const health = require('../health');
 const { logoSvg, logoPng } = require('./logo');
@@ -85,11 +87,24 @@ async function readJsonBody(req, limit = 4096) {
   return JSON.parse(body || '{}');
 }
 
+// A request body as it is (an uploaded file), giving up as soon as it is larger than the limit.
+async function readBody(req, limit) {
+  const chunks = [];
+  let total = 0;
+  for await (const chunk of req) {
+    total += chunk.length;
+    if (total > limit) throw new Error('Body too large');
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks);
+}
+
 
 const MANIFEST = /^(?:\/([^/]+))?\/manifest\.json$/;
 const SUBTITLES = /^(?:\/([^/]+))?\/subtitles\/([^/]+)\/([^/]+?)(?:\/([^/]+))?\.json$/;
 const CONFIGURE = /^(?:\/([^/]+))?\/configure\/?$/;
 const SUBFILE = /^\/subfile\/([A-Za-z0-9_-]+)\.srt$/;
+const UPLOADED = /^\/uploaded\/(\d{1,12})\.([a-z0-9]{2,5})$/;
 
 async function route(req, res, path) {
   const baseUrl = publicBaseUrl(req);
@@ -151,6 +166,14 @@ async function route(req, res, path) {
 
   // /favicon.ico is asked for by browsers on non-page addresses (e.g. the manifest) and by crawlers;
   // browsers accept a PNG there.
+  // A subtitle uploaded on the dashboard.
+  if ((match = path.match(UPLOADED))) {
+    const file = uploads.read(match[1], match[2]);
+    if (!file) return false;
+    res.track = { kind: 'subtitle file', detail: file.filename, files: [[file.filename, uploads.name, null, `uploaded:${file.id}`]] };
+    return send(res, 200, file.content, file.type);
+  }
+
   if (path === '/logo.svg' || path === '/logo.png' || path === '/favicon.ico') {
     res.track = null;
     res.setHeader('Cache-Control', 'public, max-age=86400');
@@ -217,6 +240,54 @@ async function route(req, res, path) {
     noStore(res);
     if (!auth.isSignedIn(req)) return send(res, 401, { error: 'Sign in first' });
     return send(res, 200, dashboardData());
+  }
+
+  // Uploaded subtitles: the list, adding one (the file is the request body, its details are in the
+  // query), deleting, and looking up a title's name for the upload form.
+  if (path.startsWith('/dashboard/api/uploads') || path === '/dashboard/api/title') {
+    res.track = null;
+    noStore(res);
+    if (!auth.isSignedIn(req)) return send(res, 401, { error: 'Sign in first' });
+    const query = querystring.parse((req.url || '').split('?')[1] || '');
+
+    if (path === '/dashboard/api/title') {
+      const type = query.type === 'series' ? 'series' : 'movie';
+      const imdbId = String(query.imdbId || '');
+      if (!/^tt\d{5,10}$/.test(imdbId)) return send(res, 400, { error: 'The IMDb ID must look like tt0133093' });
+      const meta = await cinemeta.getMeta(type, imdbId).catch(() => null);
+      return send(res, 200, { imdbId, type, name: meta?.name || null, year: Number.parseInt(meta?.year, 10) || null });
+    }
+
+    if (path === '/dashboard/api/uploads' && req.method === 'GET') {
+      return send(res, 200, { enabled: uploads.enabled, maxBytes: settings.subtitleMaxBytes, uploads: uploads.list() });
+    }
+
+    if (path === '/dashboard/api/uploads' && req.method === 'POST') {
+      let body;
+      try {
+        body = await readBody(req, settings.subtitleMaxBytes);
+      } catch {
+        return send(res, 413, { error: `The file is larger than ${Math.round(settings.subtitleMaxBytes / 1024)} KB` });
+      }
+      try {
+        const meta = await cinemeta.getMeta(query.type === 'series' ? 'series' : 'movie', String(query.imdbId || '')).catch(() => null);
+        const upload = uploads.add({ ...query, forced: query.forced === '1', title: meta?.name, year: Number.parseInt(meta?.year, 10) || null }, body);
+        return send(res, 200, { upload });
+      } catch (error) {
+        return send(res, 400, { error: error.message });
+      }
+    }
+
+    if (path === '/dashboard/api/uploads/delete' && req.method === 'POST') {
+      let body;
+      try {
+        body = await readJsonBody(req, 64 * 1024);
+      } catch {
+        return send(res, 400, { error: 'Bad request' });
+      }
+      return send(res, 200, { deleted: uploads.remove(body.ids || []) });
+    }
+    return false;
   }
 
   return false;
