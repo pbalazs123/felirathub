@@ -24,7 +24,8 @@ episode, with correct Hungarian accents, best match first.
 - 🎭 **Forced subtitles**: subtitles for the Hungarian dub ("szinkronoshoz") are listed as "Magyar · Forced", after the full ones
 - 🎯 **Configure page** to choose languages and sources; install with one click
 - 💾 **History and disk cache** in `/data`: mount a volume there and they survive restarts
-- 📊 **Dashboard** with sign-in (`DASHBOARD_PASSWORD`): request history, source status, caches and system health
+- 📤 **Your own subtitles**: upload a subtitle on the dashboard for a film or episode; it is offered with the others as the source "Uploaded"
+- 📊 **Dashboard** with sign-in (`DASHBOARD_PASSWORD`): request history, your uploads, source status, caches and system health
 - 🔒 **Hardened**: non-root, no package managers in the image, zip-bomb and size limits
 
 ## 🏷️ Tags
@@ -32,7 +33,7 @@ episode, with correct Hungarian accents, best match first.
 | Tag | Description |
 |-----|-------------|
 | `latest` | Latest release |
-| `0.1.0`, `0.1` | A specific release, or the newest of a minor version |
+| `0.1.1`, `0.1` | A specific release, or the newest of a minor version |
 | `dev` | Test builds of upcoming changes (may be unstable) |
 
 All images support **`linux/amd64`** and **`linux/arm64`** (e.g. Raspberry Pi 4/5). The same images are also on
