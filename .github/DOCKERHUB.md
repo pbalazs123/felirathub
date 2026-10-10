@@ -33,7 +33,7 @@ episode, with correct Hungarian accents, best match first.
 | Tag | Description |
 |-----|-------------|
 | `latest` | Latest release |
-| `0.1.1`, `0.1` | A specific release, or the newest of a minor version |
+| `0.1.2`, `0.1` | A specific release, or the newest of a minor version |
 | `dev` | Test builds of upcoming changes (may be unstable) |
 
 All images support **`linux/amd64`** and **`linux/arm64`** (e.g. Raspberry Pi 4/5). The same images are also on
