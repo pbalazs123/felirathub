@@ -1,8 +1,8 @@
 # Builds amd64 + arm64 images and pushes them to Docker Hub and GHCR.
 # - Push to main: tags the image `dev` (test builds; `latest` and releases only come from tags).
-# - Push a vX.Y.Z tag: tags `X.Y.Z`, `X.Y`, `X` and `latest`, updates the Docker Hub overview and
-#   creates a GitHub release from the annotated tag message. Tags like v1.0.0-beta.1 become a
-#   pre-release (image tags `1.0.0-beta.1` and `latest`).
+# - Push a vX.Y.Z tag: tags `X.Y.Z`, `X.Y`, `X` (from 1.0 on) and `latest`, updates the Docker Hub
+#   overview and creates a GitHub release from the annotated tag message. Tags like v1.0.0-beta.1
+#   become a pre-release (image tags `1.0.0-beta.1` and `latest`).
 name: Publish images
 
 on:
@@ -47,14 +47,13 @@ jobs:
           images: |
             ${{ env.DOCKERHUB_IMAGE }}
             ${{ env.GHCR_IMAGE }}
-          # v1.2.3 -> 1.2.3, 1.2, 1, latest
+          # v1.2.3 -> 1.2.3, 1.2, 1, latest (no tag per commit: they only pile up)
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
+            type=semver,pattern={{major}},enable=${{ !startsWith(github.ref, 'refs/tags/v0.') }}
             type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
             type=raw,value=dev,enable=${{ github.ref == 'refs/heads/main' }}
-            type=sha
 
       - uses: docker/build-push-action@v7
         with:
