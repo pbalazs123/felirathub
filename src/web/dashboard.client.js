@@ -114,6 +114,9 @@
       details += '<h4>Downloaded through FeliratHUB (' + got.length + ')</h4>' + (got.join('') ||
         '<div class="muted small">Nothing yet. OpenSubtitles files go straight from OpenSubtitles to the player, so only SuperSubtitles downloads show up here.</div>');
     }
+    if (r.kind === 'subtitles' && m && m.imdbId && last && last.uploadsEnabled) {
+      details += '<button class="btn add-upload" data-upload="' + esc(JSON.stringify({ type: m.type, imdbId: m.imdbId, season: m.season, episode: m.episode, filename: m.filename })) + '">＋ Add subtitle</button>';
+    }
     details += '</div>';
     return '<tr class="request' + (open ? ' open' : '') + '" data-request="' + r.id + '">' + (first || '') +
       '<td class="type">' + kind(r.kind) + '</td><td class="from">' + who(r) + '</td><td class="client"><span class="clip">' + esc(r.client || '–') + '</span></td><td class="title"><span class="clip">' + esc(titleOf(r, m)) + '</span></td>' +
@@ -168,6 +171,7 @@
     $('tab-prev').querySelector('span').textContent = previous ? previous.title : '—';
     $('tab-next').querySelector('span').textContent = next ? next.title : '—';
     if (id === 'history') loadHistory();
+    if (id === 'uploads') loadUploads();
   }
   function stepTab(by) {
     var ids = tabs.map(function (tab) { return tab.id; });
@@ -331,6 +335,136 @@
       return '<tr><td>' + esc(row[0]) + '</td><td class="wrap">' + esc(row[1]) + '</td></tr>';
     }));
   }
+
+  // Uploads tab: the server's own subtitles, and the dialog that adds one (opened from this tab or
+  // from a request line, which fills in the film or episode and the played file's release).
+  var LANGUAGES = { hun: 'Magyar', eng: 'English' };
+  function loadUploads() {
+    fetch(api + '/uploads?t=' + Date.now(), { cache: 'no-store', credentials: 'same-origin' })
+      .then(function (res) { if (res.status === 401) { location.reload(); return null; } return res.json(); })
+      .then(function (u) { if (u) renderUploads(u); });
+  }
+  function renderUploads(u) {
+    $('uploads-off').hidden = u.enabled;
+    $('upload-open').disabled = !u.enabled;
+    var now = Date.now();
+    $('uploads-table').innerHTML = table([['Title'], ['Language'], ['Fits release'], ['File'], ['Size', 'num'], ['Added', 'num'], ['']],
+      u.uploads.map(function (x) {
+        var title = (x.title || x.imdb) + episodeOf(x) + (x.title ? ' (' + x.imdb + ')' : '');
+        return '<tr><td class="main wrap">' + esc(title) + '</td>' +
+          '<td class="lang" data-label="Language">' + esc(LANGUAGES[x.lang] || x.lang) + (x.forced ? ' · Forced' : '') + '</td>' +
+          '<td class="wrap wide" data-label="Fits release">' + (x.release ? esc(x.release) : '<span class="muted">any release</span>') + '</td>' +
+          '<td class="wrap wide" data-label="File">' + esc(x.filename) + '</td>' +
+          '<td class="num size" data-label="Size">' + bytes(x.size) + '</td><td class="num muted added" data-label="Added" title="' + dateTime(x.time) + '">' + ago(x.time, now) + '</td>' +
+          '<td class="del num"><button class="icon-btn" data-delete="' + x.id + '" title="Delete this subtitle" aria-label="Delete">🗑</button></td></tr>';
+      }), u.enabled ? 'No uploaded subtitles yet.' : 'Uploading is off.');
+  }
+  $('uploads-table').addEventListener('click', function (e) {
+    var button = e.target.closest('button[data-delete]');
+    if (!button || !confirm('Delete this subtitle? It will no longer be offered.')) return;
+    fetch(api + '/uploads/delete', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: [Number(button.getAttribute('data-delete'))] }) })
+      .then(loadUploads);
+  });
+
+  var upload = { type: 'movie', lang: 'hun', file: null, lookup: null };
+  function setSegment(id, value) {
+    $(id).querySelectorAll('button').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-value') === value); });
+  }
+  function showUploadTitle() {
+    var id = $('upload-imdb').value.trim();
+    var series = upload.type === 'series';
+    document.querySelectorAll('#upload-dialog [data-series]').forEach(function (field) { field.hidden = !series; });
+    var episode = series && $('upload-season').value && $('upload-episode').value ? episodeOf({ season: $('upload-season').value, episode: $('upload-episode').value }) : '';
+    if (!/^tt\d{5,10}$/.test(id)) {
+      $('upload-title').innerHTML = '<span class="muted">Enter the IMDb ID of the film or series (the "tt…" part of its imdb.com address).</span>';
+      return;
+    }
+    var known = upload.lookup && upload.lookup.imdbId === id && upload.lookup.type === upload.type ? upload.lookup : null;
+    $('upload-title').innerHTML = '<img src="https://images.metahub.space/poster/small/' + id + '/img" alt="" onerror="this.remove()">' +
+      '<div><div class="t">' + esc(known ? (known.name || 'Unknown title') + episode : 'Looking up…') + '</div>' +
+      '<div class="muted small">' + esc((known && known.year ? '(' + known.year + ') · ' : '') + id) + '</div></div>';
+    if (known) return;
+    var asked = { imdbId: id, type: upload.type };
+    fetch(api + '/title?type=' + asked.type + '&imdbId=' + asked.imdbId, { cache: 'no-store', credentials: 'same-origin' })
+      .then(function (res) { return res.ok ? res.json() : asked; })
+      .then(function (found) {
+        upload.lookup = { imdbId: asked.imdbId, type: asked.type, name: found.name, year: found.year };
+        if ($('upload-imdb').value.trim() === asked.imdbId && upload.type === asked.type) showUploadTitle();
+      });
+  }
+  function chooseUploadFile(file) {
+    // Checked by its name here (and again on the server): phones' file pickers can't filter on these.
+    var fits = !file || /\.(srt|vtt|ass|ssa)$/i.test(file.name);
+    upload.file = fits && file ? file : null;
+    $('upload-chosen').textContent = upload.file ? '📄 ' + file.name + ' · ' + bytes(file.size) : '';
+    $('upload-error').textContent = fits ? '' : 'The file must be an .srt, .vtt, .ass or .ssa subtitle.';
+  }
+  // prefill: { type, imdbId, season, episode, filename } from a request line, or nothing
+  function openUpload(prefill) {
+    prefill = prefill || {};
+    upload.type = prefill.type === 'series' ? 'series' : 'movie';
+    upload.lang = 'hun';
+    upload.lookup = null;
+    $('upload-imdb').value = prefill.imdbId || '';
+    $('upload-season').value = prefill.season || '';
+    $('upload-episode').value = prefill.episode || '';
+    $('upload-forced').checked = false;
+    // The played file's name without its extension describes the release.
+    $('upload-release').value = prefill.filename ? String(prefill.filename).replace(/\.[a-z0-9]{2,4}$/i, '') : '';
+    $('upload-file').value = '';
+    chooseUploadFile(null);
+    setSegment('upload-type', upload.type);
+    setSegment('upload-lang', upload.lang);
+    showUploadTitle();
+    $('upload-dialog').showModal();
+  }
+  $('upload-open').addEventListener('click', function () { openUpload(); });
+  $('history-table').addEventListener('click', function (e) {
+    var button = e.target.closest('button[data-upload]');
+    if (button) openUpload(JSON.parse(button.getAttribute('data-upload')));
+  });
+  ['upload-close', 'upload-cancel'].forEach(function (id) { $(id).addEventListener('click', function () { $('upload-dialog').close(); }); });
+  $('upload-type').addEventListener('click', function (e) {
+    var value = e.target.getAttribute('data-value');
+    if (!value) return;
+    upload.type = value;
+    setSegment('upload-type', value);
+    showUploadTitle();
+  });
+  $('upload-lang').addEventListener('click', function (e) {
+    var value = e.target.getAttribute('data-value');
+    if (!value) return;
+    upload.lang = value;
+    setSegment('upload-lang', value);
+  });
+  ['upload-imdb', 'upload-season', 'upload-episode'].forEach(function (id) { $(id).addEventListener('input', showUploadTitle); });
+  $('upload-drop').addEventListener('click', function () { $('upload-file').click(); });
+  $('upload-file').addEventListener('change', function (e) { chooseUploadFile(e.target.files[0]); });
+  ['dragover', 'dragleave', 'drop'].forEach(function (name) {
+    $('upload-drop').addEventListener(name, function (e) {
+      e.preventDefault();
+      $('upload-drop').classList.toggle('over', name === 'dragover');
+      if (name === 'drop' && e.dataTransfer.files[0]) chooseUploadFile(e.dataTransfer.files[0]);
+    });
+  });
+  $('upload-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (!upload.file) { $('upload-error').textContent = 'Choose a subtitle file first.'; return; }
+    var query = new URLSearchParams({
+      imdbId: $('upload-imdb').value.trim(), type: upload.type, season: $('upload-season').value.trim(), episode: $('upload-episode').value.trim(),
+      lang: upload.lang, forced: $('upload-forced').checked ? '1' : '0', release: $('upload-release').value.trim(), filename: upload.file.name
+    });
+    $('upload-submit').disabled = true;
+    fetch(api + '/uploads?' + query.toString(), { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/octet-stream' }, body: upload.file })
+      .then(function (res) { return res.json().then(function (body) { return { ok: res.ok, body: body }; }); })
+      .then(function (result) {
+        $('upload-submit').disabled = false;
+        if (!result.ok) { $('upload-error').textContent = result.body.error || 'The upload failed.'; return; }
+        $('upload-dialog').close();
+        loadUploads();
+      })
+      .catch(function () { $('upload-submit').disabled = false; $('upload-error').textContent = 'Could not reach the server.'; });
+  });
 
   // Requests tab: 50 per page, search and type filter, select and delete.
   var historyState = { page: 1, search: '', kind: '', selected: {} };
