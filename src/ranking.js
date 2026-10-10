@@ -46,17 +46,22 @@ function maxPoints(playing, weights) {
 
 // Returns null for subtitles that clearly belong to another episode or season, otherwise
 // { match, order }. A subtitle can fit several releases (SuperSubtitles lists them); the best
-// fitting one counts.
+// fitting one counts. Uploaded subtitles were assigned to the video by hand (`exact`), so their
+// names aren't checked, and one without a release (`anyRelease`) fits every release.
 function score(subtitle, wanted, playing, weights) {
   const release = describeRelease(subtitle.release);
 
-  if (wanted.season !== null && release.season !== null && release.season !== wanted.season) return null;
-  if (wanted.episode !== null && release.episode !== null && release.episode !== wanted.episode) return null;
+  if (!subtitle.exact) {
+    if (wanted.season !== null && release.season !== null && release.season !== wanted.season) return null;
+    if (wanted.episode !== null && release.episode !== null && release.episode !== wanted.episode) return null;
+  }
 
   // A file without episode number that isn't a season pack comes from a search for this episode.
-  const seasonPack = Boolean(subtitle.seasonPack) || (release.season !== null && release.episode === null);
+  const seasonPack = !subtitle.exact && (Boolean(subtitle.seasonPack) || (release.season !== null && release.episode === null));
   let match = 0;
-  if (playing) {
+  if (playing && subtitle.anyRelease) {
+    match = maxPoints(playing, weights);
+  } else if (playing) {
     // Listed releases like "720p-REWARD" don't repeat the source; it comes from the file name.
     const fits = [release, ...(subtitle.releases || []).map((name) => {
       const fit = describeRelease(name);
