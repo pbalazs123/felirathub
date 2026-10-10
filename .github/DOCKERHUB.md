@@ -2,7 +2,7 @@
 
 # FeliratHUB
 
-**Hungarian & English subtitles for Stremio and Nuvio**
+**Hungarian & English subtitles for Stremio**
 
 Subtitles from [SuperSubtitles](https://feliratok.eu) (feliratok.eu) and OpenSubtitles in one list, for the right
 episode, with correct Hungarian accents, best match first.
@@ -123,7 +123,7 @@ docker compose pull && docker compose up -d
 ```
 
 > **Coming from SuperSubtitles?** FeliratHUB is a separate addon (id `community.felirathub`): install it from its
-> configure page and remove the old SuperSubtitles addon in Stremio/Nuvio.
+> configure page and remove the old SuperSubtitles addon in your app.
 
 ## ❓ Troubleshooting
 
@@ -133,4 +133,4 @@ docker compose pull && docker compose up -d
 
 ---
 
-FeliratHUB is unofficial and not affiliated with SuperSubtitles, OpenSubtitles, Stremio or Nuvio.
+FeliratHUB is unofficial and not affiliated with SuperSubtitles, OpenSubtitles or Stremio.
