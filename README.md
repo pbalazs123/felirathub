@@ -57,17 +57,17 @@
 ## 📸 Screenshots
 
 <p align="center">
-  <img src="assets/screenshots/configure-page.png" alt="The configure page" width="820"/><br/>
+  <img src="assets/screenshots/configure.png" alt="The configure page" width="820"/><br/>
   <i>The configure page: languages and sources, then one click to install</i>
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/overview.png" alt="Dashboard overview" width="820"/><br/>
+  <img src="assets/screenshots/dashboard-overview.png" alt="Dashboard overview" width="820"/><br/>
   <i>The dashboard (optional, for the server's owner): requests, searches and the health of each source</i>
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/requests.png" alt="The Requests tab of the dashboard" width="820"/><br/>
+  <img src="assets/screenshots/dashboard-requests.png" alt="The Requests tab of the dashboard" width="820"/><br/>
   <i>The Requests tab: one line per request; open one to see the client, the subtitles sent to the player with their score, and the ones downloaded</i>
 </p>
 
