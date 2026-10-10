@@ -1,6 +1,6 @@
 {
   "name": "felirathub",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "FeliratHUB: Hungarian and English subtitles for Stremio from SuperSubtitles (feliratok.eu) and OpenSubtitles",
   "keywords": [
     "stremio",
