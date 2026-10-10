@@ -285,7 +285,7 @@ async function route(req, res, path) {
       } catch {
         return send(res, 400, { error: 'Bad request' });
       }
-      return send(res, 200, { deleted: uploads.remove(body.ids || []) });
+      return send(res, 200, { deleted: uploads.remove(body.all ? null : body.ids || []) });
     }
     return false;
   }
