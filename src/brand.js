@@ -3,7 +3,7 @@
 
 module.exports = {
   name: 'FeliratHUB',
-  tagline: 'Hungarian & English subtitles for Stremio and Nuvio',
+  tagline: 'Hungarian & English subtitles for Stremio',
   description:
     'FeliratHUB brings subtitles from several sources into one list: SuperSubtitles (feliratok.eu), the largest ' +
     'Hungarian subtitle site, and OpenSubtitles. It finds the right episode, takes subtitles out of season packs, ' +
