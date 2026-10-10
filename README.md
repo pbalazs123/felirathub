@@ -42,7 +42,8 @@
 | **Correct accents** | Everything arrives as UTF-8, so ő and ű display correctly |
 | **Best match first** | The best 2 per language (all of them when the player sends no file name), ranked by how well they fit what you play: the source and release group count most (and the cut for films), shown as e.g. "Magyar · 92%" |
 | **Forced subtitles** | Subtitles for the Hungarian dub ("szinkronoshoz") are listed as "Magyar · Forced", after the full ones |
-| **Dashboard** | Request history, source status, caches and system health |
+| **Your own subtitles** | Upload a subtitle on the dashboard for a film or episode; it is offered with the others as the source "Uploaded" (in the `dev` image until the next release) |
+| **Dashboard** | Request history, your uploads, source status, caches and system health |
 
 ### 🌍 Subtitle sources
 
@@ -192,7 +193,12 @@ All settings are optional environment variables.
 ### 📊 Dashboard
 
 Set `DASHBOARD_PASSWORD` and open `/dashboard`. Tabs: **Overview** (source status, 7/30-day charts, popular titles),
-**Requests** (every request, newest first, searchable), **Caches** and **System**.
+**Requests** (every request, newest first, searchable), **Uploads**, **Caches** and **System**.
+
+**Uploads** (in the `dev` image until the next release): add your own `.srt`, `.vtt`, `.ass` or `.ssa` subtitle for a film or
+episode, either from the tab or with **Add subtitle** in an opened request, which fills in the title and the release.
+Give the release it is in sync with, or leave that empty if it fits any release. The files are converted to UTF-8 and
+kept in `DATA_DIR/uploads`, so uploading needs a writable data folder.
 
 ### 🔐 Privacy
 
