@@ -211,8 +211,8 @@ dialog .body { padding: 18px 20px 20px; }
 .field.grow { flex: 1 1 150px; }
 .field.narrow { flex: 0 0 84px; }
 .field input.mono { font-family: ui-monospace, monospace; font-size: .85rem; }
-.check { display: inline-flex; gap: 8px; align-items: center; color: var(--muted-text); font-size: .9rem; margin-bottom: 22px; cursor: pointer; }
-.check input { width: 16px; height: 16px; accent-color: var(--primary); }
+label.check { display: inline-flex; gap: 8px; align-items: center; color: var(--muted-text); font-size: .9rem; margin-bottom: 22px; cursor: pointer; }
+label.check input { width: 16px; height: 16px; accent-color: var(--primary); }
 .drop { border: 2px dashed hsl(220 5% 28%); border-radius: 12px; padding: 20px; text-align: center; color: var(--muted-text); background: var(--bg); cursor: pointer; }
 .drop .touch { display: none; }
 .drop.over { border-color: var(--primary); }
@@ -248,8 +248,8 @@ dialog .actions { display: flex; justify-content: flex-end; gap: 10px; margin-to
   .uploads .icon-btn, dialog .icon-btn { min-width: 44px; min-height: 44px; }
   /* 16px keeps iOS from zooming in when a field is tapped. */
   dialog input[type=text], dialog input.mono { font-size: 16px; }
-  .check { min-height: 44px; }
-  .check input { width: 20px; height: 20px; }
+  label.check { min-height: 44px; }
+  label.check input { width: 20px; height: 20px; }
   /* Nothing can be dropped on a touch screen: the whole box opens the file picker. */
   .drop { padding: 24px 16px; }
   .drop .mouse { display: none; }
@@ -285,6 +285,7 @@ dialog .actions { display: flex; justify-content: flex-end; gap: 10px; margin-to
   .requests.history th:first-child { display: flex; gap: 10px; align-items: center; }
   .requests.history th:first-child::after { content: "Select all"; }
   .requests.history tr.request { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto auto; gap: 6px 10px; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--border); }
+  .requests.history tr.request td { padding: 0; }
   .requests.history tr.request:hover td, .requests.history tr.request.open td { background: none; }
   .requests.history tr.request.open { background: var(--muted); border-bottom-color: transparent; }
   .requests.history td.check { grid-area: 1 / 1 / 4 / 2; align-self: start; padding-top: 2px; }
@@ -340,7 +341,7 @@ dialog .actions { display: flex; justify-content: flex-end; gap: 10px; margin-to
   .field.narrow { flex: 1 1 0; }
   .field-row .segmented { display: flex; }
   .field-row .segmented button { flex: 1; }
-  .check { margin-bottom: 14px; }
+  label.check { margin-bottom: 14px; }
   dialog .actions { flex-direction: column-reverse; }
   dialog .actions .btn { width: 100%; justify-content: center; text-align: center; }
   #upload-open { width: 100%; justify-content: center; text-align: center; }
