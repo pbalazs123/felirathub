@@ -193,8 +193,9 @@ footer { color: var(--muted-text); font-size: .78rem; padding: 0 24px 24px; max-
 .block .label { flex-wrap: wrap; gap: 2px 12px; }
 /* Uploads: the list and the "Add a subtitle" dialog. */
 .uploads td.wrap { max-width: 360px; }
-.uploads .icon-btn, dialog .icon-btn { border: 0; background: none; color: var(--muted-text); cursor: pointer; padding: 6px; font-size: 1rem; }
-.uploads .icon-btn:hover { color: var(--bad); }
+dialog .icon-btn { border: 0; background: none; color: var(--muted-text); cursor: pointer; padding: 6px; font-size: 1rem; }
+.toolbar .grow { flex: 1; }
+.uploads th.check, .uploads td.check { width: 1%; }
 .request-details .add-upload { margin-top: 12px; justify-self: start; }
 dialog { width: min(640px, 100% - 24px); max-height: 92vh; max-height: 92dvh; padding: 0; border: 1px solid var(--border); border-radius: 16px; background: var(--card); color: var(--text); overflow: auto; }
 dialog::backdrop { background: rgb(0 0 0 / .65); }
@@ -245,7 +246,7 @@ dialog .actions { display: flex; justify-content: flex-end; gap: 10px; margin-to
   .btn, select, input[type=text] { min-height: 44px; }
   .segmented button { padding: 10px 16px; }
   .history input[type=checkbox] { width: 20px; height: 20px; }
-  .uploads .icon-btn, dialog .icon-btn { min-width: 44px; min-height: 44px; }
+  dialog .icon-btn { min-width: 44px; min-height: 44px; }
   /* 16px keeps iOS from zooming in when a field is tapped. */
   dialog input[type=text], dialog input.mono { font-size: 16px; }
   label.check { min-height: 44px; }
@@ -301,20 +302,26 @@ dialog .actions { display: flex; justify-content: flex-end; gap: 10px; margin-to
 
   /* The other tables: one block per row, each value under its name. */
   #caches, #caches tbody, #settings, #settings tbody, #settings tr, #uploads-table, #uploads-table tbody { display: block; }
-  #caches tr:first-child, #settings tr:first-child, #uploads-table tr:first-child { display: none; }
+  #caches tr:first-child, #settings tr:first-child { display: none; }
   #caches tr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 14px 0; border-bottom: 1px solid var(--border); }
   #caches tr:last-child, #settings tr:last-child { border-bottom: 0; }
   #caches td { display: block; padding: 0; border: 0; text-align: left; white-space: normal; }
   #caches td:first-child { grid-column: 1 / -1; font-weight: 600; }
   #caches td[data-label]::before { content: attr(data-label); display: block; color: var(--muted-text); font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; }
-  #uploads-table tr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px 10px; padding: 14px; border-bottom: 1px solid var(--border); }
+  /* Uploads: cards with the checkbox on the left, like the requests; the head is "Select all". */
+  #uploads-table tr { display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px 10px; padding: 14px; border-bottom: 1px solid var(--border); }
+  #uploads-table tr:first-child { display: block; padding: 10px 14px; }
+  #uploads-table th { display: none; padding: 0; border: 0; }
+  #uploads-table th:first-child { display: flex; gap: 10px; align-items: center; }
+  #uploads-table th:first-child::after { content: "Select all"; }
+  #uploads-table th input { flex: none; }
   #uploads-table td { display: block; padding: 0; border: 0; text-align: left; white-space: normal; word-break: break-word; }
-  #uploads-table td.main { grid-area: 1 / 1 / 2 / 3; font-weight: 600; align-self: center; }
-  #uploads-table td.del { grid-area: 1 / 3; }
-  #uploads-table td.lang { grid-area: 2 / 1; }
-  #uploads-table td.size { grid-area: 2 / 2; }
-  #uploads-table td.added { grid-area: 2 / 3; }
-  #uploads-table td.wide { grid-column: 1 / -1; }
+  #uploads-table td.check { grid-area: 1 / 1 / 5 / 2; padding-top: 2px; }
+  #uploads-table td.main { grid-area: 1 / 2 / 2 / 5; font-weight: 600; }
+  #uploads-table td.lang { grid-area: 2 / 2; }
+  #uploads-table td.size { grid-area: 2 / 3; }
+  #uploads-table td.added { grid-area: 2 / 4; }
+  #uploads-table td.wide { grid-column: 2 / -1; }
   #uploads-table td[data-label]::before { content: attr(data-label); display: block; color: var(--muted-text); font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; font-weight: 400; }
   #uploads-table td[colspan] { grid-column: 1 / -1; }
   #settings tr { padding: 10px 0; border-bottom: 1px solid var(--border); }
@@ -425,7 +432,12 @@ function dashboardPage({ baseUrl }) {
       <button class="btn primary" id="upload-open">＋ Add subtitle</button>
     </div>
     <div class="banner" id="uploads-off" style="margin-bottom:14px" hidden>Uploading needs a data folder the server can write to. Mount a volume at /data (or set DATA_DIR), make sure the container's user (uid 1000) can write there, and restart.</div>
-    <div class="card scroll" style="padding:0"><table class="uploads" id="uploads-table"></table></div>
+    <div class="toolbar">
+      <span class="muted small grow" id="uploads-count"></span>
+      <button class="btn danger" id="uploads-delete" hidden>Delete selected</button>
+      <button class="btn danger" id="uploads-clear">Clear all</button>
+    </div>
+    <div class="card scroll" style="padding:0"><table class="uploads history" id="uploads-table"></table></div>
   </section>
 
   <section data-tab="caches" class="stack">
