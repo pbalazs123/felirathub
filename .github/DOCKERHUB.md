@@ -32,9 +32,8 @@ season packs on the fly, drops subtitles for the wrong episode, and ranks the re
 | Tag | Description |
 |-----|-------------|
 | `latest` | Latest release |
-| `1.3.5`, `1.3`, `1` | Specific release, minor or major version |
+| `0.1.0`, `0.1` | A specific release, or the newest of a minor version |
 | `dev` | Test builds of upcoming changes (may be unstable) |
-| `sha-<commit>` | Build of a specific commit |
 
 All images support **`linux/amd64`** and **`linux/arm64`** (e.g. Raspberry Pi 4/5). The same images are also on
 `ghcr.io/pbalazs123/felirathub`.
