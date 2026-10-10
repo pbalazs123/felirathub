@@ -2,10 +2,10 @@
 
 # FeliratHUB
 
-**Hungarian & English subtitles for Stremio and Nuvio, from [SuperSubtitles](https://feliratok.eu) (feliratok.eu).**
+**Hungarian & English subtitles for Stremio and Nuvio**
 
-FeliratHUB is a self-hosted Stremio addon that finds subtitles for movies and series on SuperSubtitles and OpenSubtitles, extracts episodes from
-season packs on the fly, drops subtitles for the wrong episode, and ranks the rest to match the release you're playing.
+Subtitles from [SuperSubtitles](https://feliratok.eu) (feliratok.eu) and OpenSubtitles in one list, for the right
+episode, with correct Hungarian accents, best match first.
 
 [GitHub](https://github.com/pbalazs123/felirathub) •
 [Releases](https://github.com/pbalazs123/felirathub/releases) •
@@ -15,16 +15,16 @@ season packs on the fly, drops subtitles for the wrong episode, and ranks the re
 
 ## ✨ Features
 
-- 🔗 **Two sources, one list**: OpenSubtitles first, SuperSubtitles (feliratok.eu) for the languages it has nothing (or no good match) in
+- 🔗 **Two sources, one list**: OpenSubtitles first; SuperSubtitles fills in the languages OpenSubtitles has nothing in, or nothing that matches your file at least 70%
 - 🇭🇺 **Hungarian and English** subtitles, or only one of them
-- 🏆 **Release ranking**: like Bazarr, matching source and release group (and the cut for films) come first, with a match percentage
-- 🔍 **Right episode and film**: other episodes, seasons and same-name films are filtered out
-- 📦 **Season packs**: ZIP/RAR packs are unpacked in memory and the right episode is served
-- 🎭 **Forced subtitles** for the Hungarian dub are marked and listed after the full ones
-- 🔤 **Correct characters**: subtitles are converted to UTF-8, so ő and ű display correctly
-- 🎯 **Configure page** to choose sources, languages and options; install with one click
+- 🔍 **Right episode, right film**: other episodes, seasons and same-name films are filtered out
+- 📦 **Season packs**: the episode is taken out of ZIP and RAR packs on the fly
+- 🔤 **Correct accents**: everything arrives as UTF-8, so ő and ű display correctly
+- 🏆 **Best match first**: the best 2 per language (all of them when the player sends no file name), ranked like Bazarr: source and release group of what you play count most (and the cut for films), shown as e.g. "Magyar · 92%"
+- 🎭 **Forced subtitles**: subtitles for the Hungarian dub ("szinkronoshoz") are listed as "Magyar · Forced", after the full ones
+- 🎯 **Configure page** to choose languages and sources; install with one click
 - 💾 **History and disk cache** in `/data`: mount a volume there and they survive restarts
-- 📊 **Dashboard** with sign-in (`DASHBOARD_PASSWORD`): requests, sources' health, caches, CPU and memory; GDPR-friendly
+- 📊 **Dashboard** with sign-in (`DASHBOARD_PASSWORD`): request history, source status, caches and system health
 - 🔒 **Hardened**: non-root, no package managers in the image, zip-bomb and size limits
 
 ## 🏷️ Tags
@@ -45,13 +45,19 @@ All images support **`linux/amd64`** and **`linux/arm64`** (e.g. Raspberry Pi 4/
 ```yaml
 services:
   felirathub:
-    image: pbalazs123/felirathub:latest
+    image: pbalazs123/felirathub:latest       # or :dev for test builds
     container_name: felirathub
     restart: unless-stopped
     ports:
+      # Only reachable from this host; put a reverse proxy with HTTPS in front of it.
       - "127.0.0.1:7000:7000"
+    # Optional settings: remove the "#" in front of "environment:" and of the lines you need.
+    # environment:
+    #   DASHBOARD_PASSWORD: change-me          # enables the admin dashboard at /dashboard
+    #   OPENSUBTITLES: "0"                     # OpenSubtitles off for new installs
+    #   PUBLIC_URL: https://subs.example.com   # only if links come out with the wrong address
     volumes:
-      - felirathub-data:/data
+      - felirathub-data:/data                  # request history (SQLite) and disk cache survive restarts
 
 volumes:
   felirathub-data:
@@ -60,6 +66,9 @@ volumes:
 ```bash
 docker compose up -d
 ```
+
+The same file is in the repository:
+`curl -O https://raw.githubusercontent.com/pbalazs123/felirathub/main/docker-compose.yml`
 
 ### Docker Run
 
@@ -72,11 +81,11 @@ docker run -d \
   pbalazs123/felirathub:latest
 ```
 
-Then open **`http://127.0.0.1:7000/`**, choose your settings, and click **Install**.
+Then open **`http://localhost:7000/`**, choose your settings and click **Install**.
 
 ## 🔐 HTTPS (required for remote access)
 
-Stremio only accepts plain-HTTP addons from `localhost`. To use the addon from other devices, put it behind a reverse
+Stremio only accepts plain-HTTP addons from `localhost`. To use FeliratHUB from other devices, put it behind a reverse
 proxy with HTTPS. Example with Caddy:
 
 ```caddyfile
@@ -92,21 +101,21 @@ If Caddy runs in Docker on the same network, use `reverse_proxy felirathub:7000`
 
 All optional.
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PORT` | `7000` | Port the server listens on inside the container |
-| `APP_BASE_PATH` | empty | Serve under a subpath, e.g. `/felirathub` (no trailing slash) |
-| `PUBLIC_URL` | empty | Public address, e.g. `https://subs.example.com`, if links come out wrong behind a proxy |
-| `DASHBOARD_PASSWORD` | empty | Enables the dashboard at `/dashboard`; without it admin sign-in is disabled and nothing is recorded |
-| `DATA_DIR` | `/data` | Folder for the database (request history and daily statistics); if it isn't writable, they're kept in memory only |
-| `HISTORY_DAYS` | `30` | How many days the request history is kept (daily totals: 90 days). When kept in memory it's also capped at 50,000 requests |
-| `CACHE_DIR` | `/data/cache` | Folder for the disk cache; caches survive restarts (if it isn't writable, they stay in memory) |
-| `CACHE_DIR_MAX_MB` | `500` | Size limit of the disk cache |
-| `OPENSUBTITLES` | `1` | Set to `0` to switch OpenSubtitles off by default for new installs |
+| Variable | Default | What it does |
+|----------|---------|--------------|
+| `DATA_DIR` | `/data` | Folder for the request history and statistics (mount a volume there); if it isn't writable, they're kept in memory |
+| `CACHE_DIR` | `/data/cache` | Folder for the disk cache, so it survives restarts; if it isn't writable, caching stays in memory |
+| `DASHBOARD_PASSWORD` | – | Enables the dashboard at `/dashboard`; without it nothing is recorded |
+| `PUBLIC_URL` | – | Public address, e.g. `https://subs.example.com`, if links come out wrong behind a proxy |
+| `OPENSUBTITLES` | `1` | `0` turns OpenSubtitles off for new installs |
 | `ADDON_ID` | `community.felirathub` | Set to `community.supersubtitles` on a server that ran SuperSubtitles, so existing installs keep working |
-| `RATE_LIMIT_PER_SECOND` | `2` | Maximum requests per second to each site |
-| `SEARCH_CACHE_HOURS` | `12` | How long search results are cached (searches without results: 1 hour) |
-| `DEBUG_SUBS` | `0` | Set to `1` to log each subtitle search |
+| `PORT` | `7000` | Port to listen on |
+| `APP_BASE_PATH` | – | Serve under a subpath, e.g. `/felirathub` |
+| `HISTORY_DAYS` | `30` | Days the request history is kept (daily totals: 90). When kept in memory it's also capped at 50,000 requests |
+| `CACHE_DIR_MAX_MB` | `500` | Size limit of the disk cache |
+| `SEARCH_CACHE_HOURS` | `12` | How long search results are cached |
+| `RATE_LIMIT_PER_SECOND` | `2` | Requests per second to each source |
+| `DEBUG_SUBS` | `0` | `1` logs every subtitle search |
 
 ## 🔄 Updating
 
@@ -120,11 +129,11 @@ docker compose pull && docker compose up -d
 
 ## ❓ Troubleshooting
 
-- **No subtitles?** Check that the title exists on [feliratok.eu](https://feliratok.eu), and that you didn't install
-  with a single-language setting.
+- **No subtitles?** The title may have none in your languages, or a source or language is switched off on the configure
+  page.
 - **See what's happening:** run with `-e DEBUG_SUBS=1` and check `docker logs felirathub`.
 
 ---
 
-Unofficial addon, not affiliated with SuperSubtitles (feliratok.eu), OpenSubtitles, Stremio or Nuvio. Thanks to
+FeliratHUB is unofficial and not affiliated with SuperSubtitles, OpenSubtitles, Stremio or Nuvio. Thanks to
 [Thsandorh](https://github.com/Thsandorh) for the original Feliratok.eu addon this project grew out of.
