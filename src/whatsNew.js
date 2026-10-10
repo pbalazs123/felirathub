@@ -1,5 +1,5 @@
 // Release notes for the "What's new" dialog: published GitHub releases (cached for 6 hours), plus
-// CHANGELOG.md entries for versions that have no release yet (development builds).
+// CHANGELOG.md entries for versions that have no release yet.
 
 const fs = require('node:fs');
 const path = require('node:path');
