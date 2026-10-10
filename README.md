@@ -5,7 +5,7 @@
 <h1 align="center">FeliratHUB</h1>
 
 <p align="center">
-  <b>Hungarian &amp; English subtitles for Stremio and Nuvio</b><br/>
+  <b>Hungarian &amp; English subtitles for Stremio</b><br/>
   Subtitles from SuperSubtitles (feliratok.eu) and OpenSubtitles in one list, for the right episode, with correct
   Hungarian accents, best match first.
 </p>
@@ -85,11 +85,11 @@
 
 3. **Install the addon**:
    - Click **Install in the Stremio app** and confirm the install prompt, or **Open in Stremio Web**
-   - Nuvio and other apps: click **Copy** next to the addon URL and paste it under Addons
+   - Other apps: click **Copy** next to the addon URL and paste it under Addons
 
 ### Option 2: Manual install
 
-1. **Open Stremio or Nuvio** and go to Addons
+1. **Open Stremio** and go to Addons
 
 2. **Install using the manifest link**:
 
@@ -103,7 +103,7 @@ Subtitles show up automatically when you play a movie or episode. Your settings 
 **install again** after changing them.
 
 > **Installed SuperSubtitles from the public instance?** The addon at that address is now FeliratHUB, a separate
-> addon. If subtitles stop showing up, remove the old SuperSubtitles addon in Stremio or Nuvio and install FeliratHUB
+> addon. If subtitles stop showing up, remove the old SuperSubtitles addon in your app and install FeliratHUB
 > again from the configure page.
 
 ## 🐳 Self-Hosting
@@ -144,7 +144,7 @@ npm install && npm start
 ## 🎯 How It Works
 
 1. **Configure.** Open the addon's page and choose languages and sources.
-2. **Install.** In the Stremio app, Stremio Web, or copy the URL into Nuvio. Your settings are part of the URL, so
+2. **Install.** In the Stremio app or Stremio Web, or copy the URL into another app. Your settings are part of the URL, so
    install again after changing them.
 3. **Watch.** When you play something, FeliratHUB looks up the title, asks OpenSubtitles (and SuperSubtitles for any
    language still missing or matching your file less than 70%), drops wrong matches and returns the best 2 subtitles per language (every subtitle for the
@@ -152,7 +152,7 @@ npm install && npm start
 
 **Tips**
 
-- Stremio and Nuvio tell the addon the file name, so the subtitle for your exact release comes first.
+- Stremio tells the addon the file name, so the subtitle for your exact release comes first.
 - Each subtitle is listed as its language and how well it matches, e.g. "Magyar · 92%" (0% when the player
   doesn't send the file name); the file names are in the
   dashboard.
@@ -228,7 +228,7 @@ tip in [Self-Hosting](#-self-hosting).
 - [SuperSubtitles](https://feliratok.eu) and [OpenSubtitles](https://www.opensubtitles.org) for the subtitles
 - IP geolocation by [DB-IP](https://db-ip.com) (CC BY 4.0)
 
-FeliratHUB is unofficial and not affiliated with SuperSubtitles, OpenSubtitles, Stremio or Nuvio.
+FeliratHUB is unofficial and not affiliated with SuperSubtitles, OpenSubtitles or Stremio.
 
 ## 📄 License
 
