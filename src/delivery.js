@@ -8,6 +8,7 @@ const net = require('./net');
 const settings = require('./settings');
 const { createCache } = require('./cache');
 const { SITE, isNotFoundPage, markMissing } = require('./sources/supersubtitles');
+const { toUtf8 } = require('./text');
 
 const HOUR = 60 * 60 * 1000;
 const SUBTITLE_FILE = /\.(srt|ass|ssa|vtt|sub)$/i;
@@ -92,16 +93,6 @@ async function fromRar(buffer, season, episode) {
   const [file] = [...extractor.extract({ files: [name] }).files];
   if (!file?.extraction) throw new Error('Could not extract the subtitle from the RAR');
   return Buffer.from(file.extraction);
-}
-
-function toUtf8(buffer) {
-  if (buffer.subarray(0, 3).equals(Buffer.from([0xef, 0xbb, 0xbf]))) return buffer;
-  try {
-    new TextDecoder('utf-8', { fatal: true }).decode(buffer);
-    return buffer;
-  } catch {
-    return Buffer.from(new TextDecoder('windows-1250').decode(buffer), 'utf8');
-  }
 }
 
 // At most ARCHIVE_EXTRACT_CONCURRENCY extractions at a time (they use memory and CPU).
